@@ -1,21 +1,24 @@
 #ifndef _arr_H_
 #define _arr_H_
 
-#include <iostream>
-#include <memory>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef int32_t ElemType;
 
-class my_array {
-private:
-    int MAXSIZE = 15;
+typedef struct Massive{
     int size;
-    ElemType* head;
-    
-public:
-    my_array(int s);
-    int get_size();
-    ElemType* operator[](int i);
-};
- 
+    ElemType* data;
+} Massive;
+
+void create_massive(Massive* mass, int Lenght);
+void delete_massive(Massive* mass);
+int length_massive(Massive* mass);
+ElemType* get_elem_massive(Massive* mass, int index);
+bool empty_massive(Massive* mass);
+void print_massive(Massive* mass);
+
 #endif
