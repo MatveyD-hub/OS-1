@@ -15,12 +15,12 @@ typedef char* ID;
 typedef struct _msg {
     char* action;
     int id;
-    int dop_id;
+    char* path;
     ID name;
     int value;
 } message;
 
-void send(void* r, char* action, int id, int dop_id, ID name, int value);
+void send(void* r, char* action, int id, char* path, ID name, int value);
 message* recv(void* r);
 
 #endif
