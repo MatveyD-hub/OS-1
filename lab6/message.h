@@ -1,0 +1,26 @@
+#ifndef _MESSAGE_H_
+#define _MESSAGE_H_
+
+#include <inttypes.h>
+#include </usr/local/opt/zeromq/include/zmq.h>
+
+typedef char* ID;
+
+// типы команд:
+// create id [parent]
+// remove id
+// exec id name value
+// heartbit time
+
+typedef struct _msg {
+    char* action;
+    int id;
+    int dop_id;
+    ID name;
+    int value;
+} message;
+
+void send(void* r, char* action, int id, int dop_id, ID name, int value);
+message* recv(void* r);
+
+#endif
