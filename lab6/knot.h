@@ -13,7 +13,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include </usr/local/opt/zeromq/include/zmq.h>
 #include "vocabulary.h"
 #include "message.h"
 
