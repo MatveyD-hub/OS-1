@@ -12,10 +12,10 @@ voc* voc_create(void) {
     return v;
 }
 
-voc* voc_find(voc* v, ID n) {
+word* voc_find(voc* v, ID n) {
     while (v != NULL) {
     if (strcmp(v->head.name, n) == 0) {
-            return v;
+            return &(v->head);
         }
         else {
             v = v->next;
@@ -61,5 +61,3 @@ int voc_get_val(voc* v) {
         return -1;
     }
 }
-
-
