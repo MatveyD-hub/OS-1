@@ -12,7 +12,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <process.h>  
+
+#include </usr/local/opt/zeromq/include/zmq.h>
 #include "vocabulary.h"
 
 int BEGIN_PORT = 30000;
@@ -23,7 +24,7 @@ char* BindURLPort(int port);
 
 char* ConURLPort(int port);
 
-int TakePort(zmq::socket_t& socket);
+int TakePort(void* socket);
 
 typedef struct _n {
 	int id;
@@ -42,8 +43,7 @@ typedef struct _n {
 } knot;
 
 knot* knot_create(void* id, void* pport);
-knot* knot_add(knot* k, int id);
-void knot_find(knot* k, int id);
+void knot_add(void* type, knot* k, int id);
 void knot_destroy(knot* k);
 
 #endif
