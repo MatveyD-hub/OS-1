@@ -2,6 +2,7 @@
 #define _MESSAGE_H_
 
 #include <inttypes.h>
+#include <stdlib.h>
 #include </usr/local/opt/zeromq/include/zmq.h>
 
 typedef char* ID;
