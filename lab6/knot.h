@@ -15,10 +15,11 @@
 
 #include </usr/local/opt/zeromq/include/zmq.h>
 #include "vocabulary.h"
+#include "message.h"
 
 int BEGIN_PORT = 30000;
-const char* BIND_URL = "tcp://*:";
-const char* CON_URL = "tcp://localhost:";
+char* BIND_URL = "tcp://*:";
+char* CON_URL = "tcp://localhost:";
 
 char* BindURLPort(int port);
 
@@ -42,7 +43,7 @@ typedef struct _n {
     void* r_fr;
 } knot;
 
-knot* knot_create(void* id, void* pport);
+knot* knot_create(char* id, char* pport);
 void knot_add(void* type, knot* k, int id);
 void knot_destroy(knot* k);
 
