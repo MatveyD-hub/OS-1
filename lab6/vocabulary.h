@@ -24,7 +24,7 @@ voc* voc_create(void);
 void voc_add_w(voc* v, ID n, int val);
 void voc_print(voc* v);
 void voc_destroy(voc* v);
-int voc_get_val(word* w);
+int voc_get_val(voc* v);
 word* voc_find(voc* v, ID n);
 
 #endif
