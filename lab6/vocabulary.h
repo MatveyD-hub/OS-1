@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
-#include "message.h"
 
+typedef char* ID;
 
 typedef struct _word {
 	ID name;
