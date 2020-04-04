@@ -12,6 +12,8 @@ gcc -c -o server.o server.c
 
 cp libknot.so /usr/local/opt/
 
-clang -Wall -o client -c client.c message.o -L/usr/local/opt/ -lzmq -lknot
+gcc -o client.o -c client.c message.o
+
+clang -Wall -o client client.o -L/usr/local/opt/ -lzmq -lknot message.o
 
 clang -Wall -o server server.o -L/usr/local/opt/ -lzmq -lknot message.o
