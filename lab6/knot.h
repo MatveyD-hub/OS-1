@@ -43,7 +43,7 @@ typedef struct _n {
 } knot;
 
 knot* knot_create(char* id, char* pport);
-void knot_add(void* type, knot* k, int id);
+void knot_add(int type, knot* k, int id);
 void knot_destroy(knot* k);
 
 #endif
