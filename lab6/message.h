@@ -22,6 +22,6 @@ typedef struct _msg {
 } message;
 
 void send(void* r, char* action, int id, char* path, ID name, int value);
-message* recv(void* r);
+message* rec(void* r);
 
 #endif
