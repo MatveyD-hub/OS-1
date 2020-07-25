@@ -42,9 +42,9 @@ knot* knot_create(char * id, char * pport) {
 		k->id = j;
 		k->pid = getpid();
 		k->context_me = zmq_ctx_new();
-    	k->r_me = zmq_socket(k->context_me, ZMQ_XSUB);
+    	k->r_me = zmq_socket(k->context_me, ZMQ_SUB);
     	int conn = zmq_connect(k->r_me, ConURLPort(inPort));
-    	//zmq_setsockopt(k->r_me, ZMQ_SUBSCRIBE, 0, 0);
+    	zmq_setsockopt(k->r_me, ZMQ_SUBSCRIBE, 0, 0);
 		printf("CONNECTION %d\n",conn);
 		printf("PORT CHILD %d\n",inPort);
     	k->v = voc_create();
@@ -75,7 +75,7 @@ void knot_add(knot* k, int d) {
     	else {
     	free(str);
     	free(str1);
-    	send(k->r_fl,"test",-1,"u","nm",-1);
+    	send(k->r_fl,"test",11,"u","nm",-1);
     	}
 }	
 
