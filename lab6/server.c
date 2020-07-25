@@ -352,4 +352,3 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 		//}
 	}
 }
-
