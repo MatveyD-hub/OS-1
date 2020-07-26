@@ -44,7 +44,7 @@ knot* knot_create(char * id, char * pport) {
 		k->context_me = zmq_ctx_new();
     	k->r_me = zmq_socket(k->context_me, ZMQ_SUB);
     	int conn = zmq_connect(k->r_me, ConURLPort(inPort));
-    	zmq_setsockopt(k->r_me, ZMQ_SUBSCRIBE, 0, 0);
+    	zmq_setsockopt(k->r_me, ZMQ_SUBSCRIBE, "", 0);
 		printf("CONNECTION %d\n",conn);
 		printf("PORT CHILD %d\n",inPort);
     	k->v = voc_create();
@@ -60,10 +60,9 @@ void knot_add(knot* k, int d) {
 		sprintf(str, "%d", d);
 		k->id_l = d;
     	k->context_fl = zmq_ctx_new();
-    	k->r_fl = zmq_socket(k->context_fl, ZMQ_XPUB);
+    	k->r_fl = zmq_socket(k->context_fl, ZMQ_PUB);
     	if (k->port_fl == 0) {
     		k->port_fl = TakePort(k->r_fl);
-    		//zmq_bind(k->r_fl, BindURLPort(k->port_fl));
     	}
     	printf("PORT %d\n",k->port_fl );
     	sprintf(str1, "%d", k->port_fl);
@@ -75,6 +74,7 @@ void knot_add(knot* k, int d) {
     	else {
     	free(str);
     	free(str1);
+    	sleep(1);
     	send(k->r_fl,"test",11,"u","nm",-1);
     	}
 }	
