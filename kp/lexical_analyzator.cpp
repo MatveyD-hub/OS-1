@@ -1,4 +1,5 @@
 //  lexical_analyzator for language C++
+// результат работы: файл без комментариев и директив, коллекция связок-токенов(указаний, что должен сделать сам препроцессор)
 // Полей-Добронравова Амелия
 
 #include <iostream>
@@ -22,9 +23,9 @@ public:
 };
 
 int main(int argc, const char * argv[]) { //ввод имя файла
-    int fp,fl, state = -1;
+    int fp,fl, state = -1, i = 0;
     ssize_t n;
-    char c;
+    char c, b;
     char com[20];
     com[0] = '\0';
     
@@ -52,18 +53,32 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                 case -1:
                     if (c == '#') {
                         state = 0;
+                        i = 0;
                     }
                     else if (c == '/') {
-                        state = 4;
+                        state = 3;
                     }
-                    if (write(fl, &c, n) != n)
-                        printf("Error in writing in.\n");
+                    else {
+                        if (write(fl, &c, n) != n)
+                            printf("Error in writing in.\n");
+                    }
                     break;
                 case 0:
-                    
+                    if (c == ' ') {
+                        com[i] = '\0';
+                    }
+                    else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                        com[i] = c;
+                    }
+                    else {
+                        printf("Error in directive\n");
+                        state = 1; //ожидание конца строки
+                    }
                     break;
                 case 1:
-                    if (c == '\0') {
+                    if (c == '\n') {
+                        if (write(fl, &c, n) != n)
+                            printf("Error in writing in.\n");
                         state = -1;
                     }
                     break;
@@ -79,10 +94,21 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     else if (c == '*') {
                         state = 2;
                     }
+                    else {
+                        b = '/';
+                        if (write(fl, &b, n) != n)
+                            printf("Error in writing in.\n");
+                        if (write(fl, &c, n) != n)
+                            printf("Error in writing in.\n");
+                        state = -1;
+                    }
                     break;
                 case 4:
                     if (c == '/') {
                         state = -1;
+                    }
+                    else {
+                        state = 2;
                     }
                     break;
             };
