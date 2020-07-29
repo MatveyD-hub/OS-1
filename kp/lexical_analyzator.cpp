@@ -26,7 +26,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     int fp,fl, state = -1, i = 0;
     ssize_t n;
     char c, b;
-    char com[20];
+    char com[8];
     com[0] = '\0';
     
     if ((fp = open(argv[1], O_RDWR)) < 0) {
@@ -38,12 +38,14 @@ int main(int argc, const char * argv[]) { //ввод имя файла
         exit(1);
     }
     /* список состояний:
+     -2 пропускаю пробелы до директивы
      -1 обработка не символов для препроцессора
      0 обработка директивы
      1 удаляем комментарии пока встречаемый символ не \0
      2 удаляем комментарии пока не встретится * /
      3 подозрение на коментарий
      4 подозрение на закрытие комментария
+     5 после директивы
      
      */
     while (1) {
@@ -52,7 +54,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
             {
                 case -1:
                     if (c == '#') {
-                        state = 0;
+                        state = -2;
                         i = 0;
                     }
                     else if (c == '/') {
@@ -63,12 +65,37 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             printf("Error in writing in.\n");
                     }
                     break;
-                case 0:
-                    if (c == ' ') {
-                        com[i] = '\0';
+                case -2:
+                    if (c == '\0') {
+                        state = -1;
+                    }
+                    else if (c == ' ') {
+                        
                     }
                     else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
                         com[i] = c;
+                        i++;
+                        state = 0;
+                    }
+                    else {
+                        state = 1;
+                    }
+                    break;
+                case 0:
+                    if (i == 8) {
+                        printf("Error in directive\n");
+                        i = 0;
+                        state = 1;
+                    }
+                    if (c == ' ') {
+                        com[i] = '\0';
+                        i = 0;
+                        std::cout << "КОМАНДА " << com << "|\n";
+                        state = 5;
+                    }
+                    else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                        com[i] = c;
+                        i++;
                     }
                     else {
                         printf("Error in directive\n");
@@ -110,6 +137,9 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     else {
                         state = 2;
                     }
+                    break;
+                case 5:
+                    
                     break;
             };
         }
