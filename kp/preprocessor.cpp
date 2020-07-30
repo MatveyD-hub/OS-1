@@ -98,6 +98,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     char dop1[30];
     dop[0] = '\0';
     dop1[0] = '\0';
+    char flag = ' '; //for include
     if ((fp = open(argv[1], O_RDWR)) < 0) {
         printf("Cannot open file.\n");
         exit(1);
@@ -116,7 +117,9 @@ int main(int argc, const char * argv[]) { //ввод имя файла
      3 подозрение на коментарий
      4 подозрение на закрытие комментария
      5 после директивы
-     
+     6 чтение лексем после директивы
+     7 после include <
+     8 после include "
      */
     while (1) {
         if((n = read(fp,&c, 1)) > 0) {
@@ -350,7 +353,68 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             }
                         }
                         else if (!strcmp(com,"include")) {
-                            
+                            if (flag == ' ') {
+                                if (!strcmp(dop,"<") || !strcmp(dop,"\"")) {
+                                    flag = dop[0];
+                                    state = 5;
+                                    dop[0] = '\0';
+                                    i = 0;
+                                }
+                                else if (dop[0] == '<') {
+                                    if (dop[i - 1] == '>') {
+                                        //поиск <>
+                                    }
+                                    else {
+                                        flag = dop[0];
+                                        state = 5;
+                                        dop[0] = '\0';
+                                        i = 0;
+                                    }
+                                }
+                                else if (dop[0] == '"') {
+                                    if (dop[i - 1] == '"') {
+                                        
+                                        //поиск ""
+                                    }
+                                    else {
+                                        flag = dop[0];
+                                        state = 5;
+                                        dop[0] = '\0';
+                                        i = 0;
+                                    }
+                                }
+                                else {
+                                    for (int j = 0; j <= 8;j++) {
+                                        com[j] = '\0';
+                                    }
+                                    if (c == '\n') {
+                                        state = -1;
+                                    }
+                                    else {
+                                        state = 1;
+                                    }
+                                }
+                            }
+                            else {
+                                if (c == '\n') {
+                                    for (int j = 0; j <= 8;j++) {
+                                        com[j] = '\0';
+                                    }
+                                    state = -1;
+                                }
+                                else {
+                                    
+                                }
+                                for (int j = 0; j <= i;j++) {
+                                    dop1[j] = dop[j];
+                                }
+                                for (int j = 0; j <= i;j++) {
+                                    dop[j] = '\0';
+                                }
+                                i1 = i;
+                                i = 0;
+                                state = 5;
+                            }
                         }
                         else if (!strcmp(com,"if")) {
                             
