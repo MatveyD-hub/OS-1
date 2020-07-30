@@ -1,5 +1,4 @@
-//  lexical_analyzator for language C++
-// результат работы: файл без комментариев и директив, коллекция связок-токенов(указаний, что должен сделать сам препроцессор)
+//  preprocessor for language C++
 // Полей-Добронравова Амелия
 
 #include <iostream>
@@ -7,9 +6,42 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+#include <map>
 
 enum Lexeme { //препроцессорные лексемы
     CONST, NAME, IDENTIFIER, KEYWORD, OPERATOR, NUMBER, SEPARATOR
+};
+
+class define {
+    std::map<std::string, std::string> d;
+public:
+    void define_insert(std::string k1, std::string k2) {
+        d[k1] = k2;
+    }
+    bool define_check(std::string k1) {
+        std::map<std::string, std::string> :: iterator it = d.find(k1);
+        if (it == d.end()) {
+            return true; //если уже есть в словаре, вернуть true
+        }
+        else {
+            return false;
+        }
+    }
+    void define_delete(std::string k1) {
+        std::map<std::string, std::string> :: iterator it = d.find(k1);
+        if (it != d.end()) {
+            d.erase(it);
+        }
+    }
+    void define_change(std::string k1, std::string k2) {
+        std::map<std::string, std::string> :: iterator it = d.find(k1);
+        if (it != d.end()) {
+            it->second = k2;
+        }
+        else {
+            std::cout << "No pair to change\n";
+        }
+    }
 };
 
 class token {
@@ -139,7 +171,15 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     }
                     break;
                 case 5:
-                    
+                    if (c == '\0') {
+                        state = -1;
+                    }
+                    else if (c == ' ') {
+                        
+                    }
+                    else {
+                        
+                    }
                     break;
             };
         }
