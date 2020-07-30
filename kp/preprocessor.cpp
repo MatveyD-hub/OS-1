@@ -18,11 +18,11 @@ class Define { //хранит все пары для замены в текст�
 public:
     void define_insert(char* k1, char* k2) {
         char* p1 = new char[sizeof(k1)];
-        for (int j = 0; j < sizeof(k1); j++) {
+        for (int j = 0; j <= sizeof(k1); j++) {
             p1[j] = k1[j];
         }
         char* p2 = new char[sizeof(k2)];
-        for (int j = 0; j < sizeof(k2); j++) {
+        for (int j = 0; j <= sizeof(k2); j++) {
             p2[j] = k2[j];
         }
         d[p1] = p2;
@@ -37,7 +37,12 @@ public:
         return false;
     }
     void define_delete(char* k1) {
-        std::map<char*, char*> :: iterator it = d.find(k1);
+        std::map<char*, char*> :: iterator it = d.begin();
+        for (; it != d.end(); it++) {  // выводим их
+            if (!strcmp(it->first, k1)) {
+                break;
+            }
+        }
         if (it != d.end()) {
             delete [] it->first;
             delete [] it->second;
@@ -177,32 +182,64 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                 case -3: //after define + combination
                     if (c == '\n') {
                         state = -1;
-                        if (!d.define_check(dop1)) {
-                            d.define_insert(dop1, dop);
+                        if (!strcmp(com,"define")) {
+                            if (!d.define_check(dop1)) {
+                                d.define_insert(dop1, dop);
+                            }
+                            d.define_cout();
+                            for (int j = 0; j <= i1;j++) {
+                                dop1[j] = '\0';
+                            }
+                            for (int j = 0; j <= i;j++) {
+                                dop[j] = '\0';
+                            }
+                            i = 0;
+                            i1 = 0;
+                            for (int j = 0; j <= 7;j++) {
+                                com[j] = '\0';
+                            }
                         }
-                        d.define_cout();
-                        for (int j = 0; j <= i1;j++) {
-                            dop1[j] = '\0';
+                        else if (!strcmp(com,"undef")) {
+                            if (d.define_check(dop)) {
+                                d.define_delete(dop);
+                            }
+                            d.define_cout();
+                            for (int j = 0; j <= i;j++) {
+                                dop[j] = '\0';
+                            }
+                            i = 0;
+                            for (int j = 0; j <= 6;j++) {
+                                com[j] = '\0';
+                            }
                         }
-                        for (int j = 0; j <= i;j++) {
-                            dop[j] = '\0';
-                        }
-                        i = 0;
-                        i1 = 0;
                     }
                     else if (c == ' ') {
                         
                     }
                     else {
                         state = 1;
-                        for (int j = 0; j <= i1;j++) {
-                            dop1[j] = '\0';
+                        if (!strcmp(com,"define")) {
+                            for (int j = 0; j <= i1;j++) {
+                                dop1[j] = '\0';
+                            }
+                            for (int j = 0; j <= i;j++) {
+                                dop[j] = '\0';
+                            }
+                            i = 0;
+                            i1 = 0;
+                            for (int j = 0; j <= 7;j++) {
+                                com[j] = '\0';
+                            }
                         }
-                        for (int j = 0; j <= i;j++) {
-                            dop[j] = '\0';
+                        else if (!strcmp(com,"undef")) {
+                            for (int j = 0; j <= i;j++) {
+                                dop[j] = '\0';
+                            }
+                            i = 0;
+                            for (int j = 0; j <= 6;j++) {
+                                com[j] = '\0';
+                            }
                         }
-                        i = 0;
-                        i1 = 0;
                     }
                     break;
                 case 2:
@@ -242,7 +279,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         
                     }
                     else {
-                        std::cout << "AFTER DIR\n";
                         i = 0;
                         dop[i] = c;
                         i++;
@@ -252,7 +288,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                 case 6: //read lexeme, what next?
                     if (c == '\n' || c == ' ') {
                         dop[i] = '\0';
-                        if (!strcmp(com,"define")) {
+                        if (!strcmp(com,"define")) { //без пробелов в именах лексем!!!!
                             if (dop1[0] == '\0') {
                                 if (c == '\n') {
                                     dop[0] = '\0';
@@ -267,7 +303,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     }
                                     i1 = i;
                                     i = 0;
-                                    state = 6;
+                                    state = 5;
                                 }
                             }
                             else {
@@ -283,6 +319,9 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     for (int j = 0; j <= i;j++) {
                                         dop[j] = '\0';
                                     }
+                                    for (int j = 0; j <= 7;j++) {
+                                        com[j] = '\0';
+                                    }
                                     i = 0;
                                     i1 = 0;
                                 }
@@ -292,7 +331,23 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             }
                         }
                         else if (!strcmp(com,"undef")) {
-                            
+                            if (c == '\n') {
+                                if (d.define_check(dop)) {
+                                    d.define_delete(dop);
+                                }
+                                d.define_cout();
+                                for (int j = 0; j <= i;j++) {
+                                    dop[j] = '\0';
+                                }
+                                i = 0;
+                                for (int j = 0; j <= 6;j++) {
+                                    com[j] = '\0';
+                                }
+                                state = -1;
+                            }
+                            else {
+                                state = -3;
+                            }
                         }
                         else if (!strcmp(com,"include")) {
                             
