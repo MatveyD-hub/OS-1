@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <map>
 #include <string>
+#include <dirent.h>
 
 enum Lexeme { //препроцессорные лексемы
     CONST, NAME, IDENTIFIER, KEYWORD, OPERATOR, NUMBER, SEPARATOR
@@ -97,6 +98,16 @@ public:
 
 int main(int argc, const char * argv[]) { //ввод имя файла
     Define d;
+    int _LINE_ = 1;
+    struct dirent* entry;
+    int result;
+    DIR *dir = NULL;
+    char* _FILE_ = new char[sizeof(argv[1]) + 4];
+    for (int j = 0; j <= sizeof(argv[1]); j++) {
+        _FILE_[j] = argv[1][j];
+    }
+    strcat(_FILE_, ".cpp");
+    std::cout << "_FILE_ " << _FILE_ << "\n";
     int fp,fl, state = -1, i = 0, i1 = 0;
     ssize_t n;
     char c = '\0', b = '\0';
@@ -107,7 +118,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     dop[0] = '\0';
     dop1[0] = '\0';
     char flag = ' '; //for include
-    if ((fp = open(argv[1], O_RDWR)) < 0) {
+    if ((fp = open(argv[1], O_RDONLY)) < 0) {
         printf("Cannot open file.\n");
         exit(1);
     }
@@ -296,6 +307,30 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             close(fp);
                             close(fl);
                             break;
+                        }
+                        else if ((!strcmp(com,"line"))) {
+                            for (int y = 0; y < i1; y++) {
+                                if (dop1[y] < '0' || dop1[y] > '9') {
+                                    flag = 'f';
+                                    break;
+                                }
+                            }
+                            if (flag == 'f') {
+                                std::cout << "Error in #line: line\n\n";
+                                flag = ' ';
+                            }
+                            else {
+                                _LINE_ = 0;
+                                for (int y = 0; y < i1; y++) {
+                                    _LINE_ = _LINE_ * 10 + dop1[y] - '0';
+                                }
+                                std::cout << "CHANGED LINE: " << _LINE_ << "\n";
+                                state = -1;
+                                for (int y = 0; y <= i1; y++) {
+                                    dop1[y] ='\0';
+                                }
+                                i1 = 0;
+                        }
                         }
                         state = -1;
                         for (int p = 0; p <= i; p++) {
@@ -537,9 +572,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         else if (!strcmp(com,"ifndef")) {
                             
                         }
-                        else if (!strcmp(com,"if")) {
-                            
-                        }
                         else if (!strcmp(com,"else")) {
                             
                         }
@@ -550,7 +582,104 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             
                         }
                         else if (!strcmp(com,"line")) {
-                            
+                            if (dop1[0] == '\0') {
+                                if (c == '\n') {
+                                    for (int y = 0; y < i; y++) {
+                                        if (dop[y] < '0' || dop[y] > '9') {
+                                            flag = 'f';
+                                            break;
+                                        }
+                                    }
+                                    if (flag == 'f') {
+                                        std::cout << "Error in #line: line\n";
+                                        flag = ' ';
+                                        for (int y = 0; y <= 5; y++) {
+                                            com[i] = '\0';
+                                        }
+                                        state = 1;
+                                    }
+                                    else {
+                                        _LINE_ = 0;
+                                        for (int y = 0; y < i; y++) {
+                                            _LINE_ = _LINE_ * 10 + dop[y] - '0';
+                                        }
+                                        std::cout << "CHANGED LINE: " << _LINE_ << "\n";
+                                        state = -1;
+                                    }
+                                    for (int y = 0; y <= i; y++) {
+                                        dop[i] = '\0';
+                                    }
+                                    i = 0;
+                                }
+                                else {
+                                    state = 5;
+                                    for (int p = 0; p <= i; p++) {
+                                        dop1[p] = dop[p];
+                                    }
+                                    i1 = i;
+                                    for (int p = 0; p <= i; p++) {
+                                        dop[p] = '\0';
+                                    }
+                                    i = 0;
+                                }
+                            }
+                            else {
+                                for (int y = 0; y < i1; y++) {
+                                    if (dop1[y] < '0' || dop1[y] > '9') {
+                                        flag = 'f';
+                                        break;
+                                    }
+                                }
+                                if (flag == 'f') {
+                                    std::cout << "Error in #line: line\n";
+                                    flag = ' ';
+                                    for (int y = 0; y <= 5; y++) {
+                                        com[i] = '\0';
+                                    }
+                                    for (int p = 0; p <= i1; p++) {
+                                        dop1[p] = '\0';
+                                    }
+                                    i1 = 0;
+                                    state = 1;
+                                }
+                                else {
+                                    _LINE_ = 0;
+                                    for (int y = 0; y < i1; y++) {
+                                        _LINE_ = _LINE_ * 10 + dop1[y] - '0';
+                                    }
+                                    std::cout << "CHANGED LINE: " << _LINE_ << "\n";
+                                    for (int p = 0; p <= i1; p++) {
+                                        dop1[p] = '\0';
+                                    }
+                                    i1 = 0;
+                                    dir = opendir(".");
+                                    if( dir == NULL ) {
+                                        printf( "Error opening dir \n");
+                                    }
+                                    entry = readdir( dir );
+                                    while (entry != NULL) {
+                                        if (!strcmp(entry->d_name, dop)) {
+                                            flag = 'f';
+                                            std::cout << "Error in #line: filename\n";
+                                            break;
+                                        }
+                                        entry = readdir( dir );
+                                    }
+                                    closedir( dir );
+                                    if (flag == ' ') {
+                                        result= rename(_FILE_, dop);
+                                        if ( result == 0 )
+                                            puts ( "File successfully renamed" );
+                                        else
+                                            perror( "Error renaming file" );
+                                        for (int y = 0; y <= i; y++) {
+                                            _FILE_[y] = dop[y];
+                                        }
+                                    }
+                                    flag = ' ';
+                                    state = -1;
+                                }
+                            }
                         }
                         else if (!strcmp(com,"error")) {
                             if (flag == ' ') {
