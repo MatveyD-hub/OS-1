@@ -277,6 +277,19 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                 case 5: //after directive
                     if (c == '\n') {
                         state = -1;
+                        for (int p = 0; p <= i; p++) {
+                            dop[p] = '\0';
+                        }
+                        for (int p = 0; p <= i1; p++) {
+                            dop1[p] = '\0';
+                        }
+                        i = 0;
+                        i1 = 0;
+                        for (int j = 0; j <= 8;j++) {
+                            com[j] = '\0';
+                        }
+                         
+                        flag = ' ';
                     }
                     else if (c == ' ') {
                         
@@ -363,23 +376,49 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 else if (dop[0] == '<') {
                                     if (dop[i - 1] == '>') {
                                         //поиск <>
+                                        std::cout << "ПОИСК " << dop << "|\n\n";
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
+                                        i = 0;
+                                        flag = ' ';
+                                        state = -1;
                                     }
                                     else {
                                         flag = dop[0];
                                         state = 5;
-                                        dop[0] = '\0';
+                                        for (int p = 0; p < i; p++) {
+                                            dop1[p] = dop[p + 1];
+                                        }
+                                        i1 = i;
+                                        
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
                                         i = 0;
                                     }
                                 }
                                 else if (dop[0] == '"') {
                                     if (dop[i - 1] == '"') {
-                                        
                                         //поиск ""
+                                        std::cout << "ПОИСК " << dop << "|\n\n";
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
+                                        i = 0;
+                                        flag = ' ';
+                                        state = -1;
                                     }
                                     else {
                                         flag = dop[0];
                                         state = 5;
-                                        dop[0] = '\0';
+                                        for (int p = 0; p < i; p++) {
+                                            dop1[p] = dop[p + 1];
+                                        }
+                                        i1 = i;
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
                                         i = 0;
                                     }
                                 }
@@ -396,24 +435,76 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 }
                             }
                             else {
-                                if (c == '\n') {
+                                if (c == '\n' && dop[0] == '\0') {
                                     for (int j = 0; j <= 8;j++) {
                                         com[j] = '\0';
                                     }
+                                    for (int p = 0; p <= i; p++) {
+                                        dop[p] = '\0';
+                                    }
+                                    for (int p = 0; p <= i1; p++) {
+                                        dop1[p] = '\0';
+                                    }
+                                    i = 0;
+                                    i1 = 0;
+                                    flag = ' ';
                                     state = -1;
                                 }
                                 else {
-                                    
+                                    if (dop[i-1] == flag || dop[0] == flag || (flag == '<' && dop[0] == '>')) {
+                                        if (flag == '"') {
+                                            //поиск "
+                                            std::cout << "ПОИСК \"" << dop1 << dop << "|\n\n";
+                                            for (int p = 0; p <= i; p++) {
+                                                dop[p] = '\0';
+                                            }
+                                            for (int p = 0; p <= i1; p++) {
+                                                dop1[p] = '\0';
+                                            }
+                                            i = 0;
+                                            flag = ' ';
+                                            state = -1;
+                                        }
+                                        else {
+                                            //поиск <
+                                            std::cout << "ПОИСК <" << dop1 << dop << "|\n\n";
+                                            for (int p = 0; p <= i; p++) {
+                                                dop[p] = '\0';
+                                            }
+                                            for (int p = 0; p <= i1; p++) {
+                                                dop1[p] = '\0';
+                                            }
+                                            i = 0;
+                                            flag = ' ';
+                                            state = -1;
+                                        }
+                                    }
+                                    else if (dop1[0] == '\0' && c != '\n') {
+                                        for (int p = 0; p <= i; p++) {
+                                            dop1[p] = dop[p];
+                                        }
+                                        i1 = i;
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
+                                        i = 0;
+                                        state = 5;
+                                    }
+                                    else {
+                                        for (int j = 0; j <= 8;j++) {
+                                            com[j] = '\0';
+                                        }
+                                        state = -1;
+                                        for (int p = 0; p <= i; p++) {
+                                            dop[p] = '\0';
+                                        }
+                                        for (int p = 0; p <= i1; p++) {
+                                            dop1[p] = '\0';
+                                        }
+                                        i = 0; i1 = 0;
+                                        flag = ' ';
+                                    }
                                 }
-                                for (int j = 0; j <= i;j++) {
-                                    dop1[j] = dop[j];
-                                }
-                                for (int j = 0; j <= i;j++) {
-                                    dop[j] = '\0';
-                                }
-                                i1 = i;
-                                i = 0;
-                                state = 5;
                             }
                         }
                         else if (!strcmp(com,"if")) {
