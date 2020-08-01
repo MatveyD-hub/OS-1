@@ -75,6 +75,14 @@ public:
         }
         std::cout << "\n";
     }
+    ~Define() {
+        std::map<char*, char*> :: iterator it = d.begin();
+        for (; it != d.end(); it++) {  // выводим их
+            delete [] it->first;
+            delete [] it->second;
+        }
+     }
+    
 };
 
 class token {
@@ -91,11 +99,11 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     Define d;
     int fp,fl, state = -1, i = 0, i1 = 0;
     ssize_t n;
-    char c, b;
-    char com[8];
+    char c = '\0', b = '\0';
+    char com[8] = {'\0'};
     com[0] = '\0';
-    char dop[30];
-    char dop1[30];
+    char dop[30] = {'\0'};
+    char dop1[30] = {'\0'};
     dop[0] = '\0';
     dop1[0] = '\0';
     char flag = ' '; //for include
@@ -156,7 +164,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     break;
                 case 0:
                     if (i == 8) {
-                        printf("Error in directive\n");
+                        printf("Error in directive 1\n");
+                        for (int j = 0; j <= i;j++) {
+                            com[j] = '\0';
+                        }
                         i = 0;
                         state = 1;
                     }
@@ -171,7 +182,11 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         i++;
                     }
                     else {
-                        printf("Error in directive\n");
+                        printf("Error in directive 2\n");
+                        for (int j = 0; j <= i;j++) {
+                            com[j] = '\0';
+                        }
+                        i = 0;
                         state = 1; //ожидание конца строки
                     }
                     break;
@@ -276,6 +291,12 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     break;
                 case 5: //after directive
                     if (c == '\n') {
+                        if (!strcmp(com,"error")) {
+                            std::cout << "\n";
+                            close(fp);
+                            close(fl);
+                            break;
+                        }
                         state = -1;
                         for (int p = 0; p <= i; p++) {
                             dop[p] = '\0';
@@ -532,7 +553,24 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             
                         }
                         else if (!strcmp(com,"error")) {
-                            
+                            if (flag == ' ') {
+                                std::cout << "Fatal error: ";
+                                flag = 'f';
+                            }
+                            std::cout << dop << " ";
+                            if (c == '\n') {
+                                std::cout << "\n";
+                                close(fp);
+                                close(fl);
+                                break;
+                            }
+                            else {
+                                state = 5;
+                                for (int p = 0; p <= i; p++) {
+                                    dop[p] = '\0';
+                                }
+                                i = 0;
+                            }
                         }
                         else if (!strcmp(com,"pragma")) {
                             
@@ -559,8 +597,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
         }
         else {
             close(fp);
+            close(fl);
             break;
         }
     }
-    return 0;
+    //return 0;
+    exit(0);
 }
