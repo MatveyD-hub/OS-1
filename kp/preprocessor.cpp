@@ -102,17 +102,15 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     struct dirent* entry;
     int result;
     DIR *dir = NULL;
-    char* _FILE_ = new char[sizeof(argv[1]) + 4];
-    for (int j = 0; j <= sizeof(argv[1]); j++) {
+    char* _FILE_ = new char[sizeof(&argv[1])];
+    char com[8] = {'\0'};
+    com[0] = '\0';
+    for (int j = 0; j <= strlen(argv[1]); j++) {
         _FILE_[j] = argv[1][j];
     }
-    //strcat(_FILE_, ".cpp");
-    std::cout << "_FILE_ " << _FILE_ << "\n";
     int fp,fl, state = -1, i = 0, i1 = 0;
     ssize_t n;
     char c = '\0', b = '\0';
-    char com[8] = {'\0'};
-    com[0] = '\0';
     char dop[30] = {'\0'};
     char dop1[30] = {'\0'};
     dop[0] = '\0';
@@ -182,11 +180,31 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         i = 0;
                         state = 1;
                     }
-                    if (c == ' ' || c == '\n') {
+                    if (c == ' ') {
                         com[i] = '\0';
                         i = 0;
                         std::cout << "КОМАНДА " << com << "|\n";
                         state = 5;
+                    }
+                    else if (c == '\n') {
+                        com[i] = '\0';
+                        i = 0;
+                        std::cout << "КОМАНДА " << com << "|\n";
+                        if (!strcmp(com,"else")) {
+                            if (flag1 == '-') {
+                                flag1 = '+';
+                            }
+                            else {
+                                flag1 = '-';
+                            }
+                            for (int j = 0; j <= 5;j++) {
+                                com[j] = '\0';
+                            }
+                            state = -1;
+                        }
+                        else {
+                            state = 5;
+                        }
                     }
                     else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
                         com[i] = c;
@@ -581,7 +599,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             }
                             else {
                                 flag1 = '-';
-                                std::cout << "LOH \n";
                             }
                             state = -1;
                             for (int j = 0; j <= 6;j++) {
@@ -609,7 +626,15 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             i = 0;
                         }
                         else if (!strcmp(com,"else") && flag1 == '-') {
-                            
+                            flag1 = '+';
+                            for (int j = 0; j <= 6;j++) {
+                                com[j] = '\0';
+                            }
+                            for (int p = 0; p <= i; p++) {
+                                dop[p] = '\0';
+                            }
+                            i = 0;
+                            state = -1;
                         }
                         else if (!strcmp(com,"elif") && flag1 == '-') {
                             
@@ -751,9 +776,28 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         else if (!strcmp(com,"pragma") && flag1 == '+') {
                             
                         }
+                        else if (c == ' ') {
+                            for (int j = 0; j <= 8;j++) {
+                                com[j] = '\0';
+                            }
+                            for (int p = 0; p <= i; p++) {
+                                dop[p] = '\0';
+                            }
+                            i = 0;
+                            state = 1;
+                        }
+                        else if (c == '\n') {
+                            for (int j = 0; j <= 8;j++) {
+                                com[j] = '\0';
+                            }
+                            for (int p = 0; p <= i; p++) {
+                                dop[p] = '\0';
+                            }
+                            i = 0;
+                            state = -1;
+                        }
                     }
                     else {
-                        if (flag1 == '+') {
                         if (i == 30) {
                             printf("Lexem is bigger than 30\n");
                             for (int j = 0; j < i;j++) {
@@ -764,13 +808,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         else {
                             dop[i] = c;
                             i++;
-                        }
-                        }
-                        else {
-                            for (int j = 0; j <= 8;j++) {
-                                com[j] = '\0';
-                            }
-                            state = 1;
                         }
                     }
                     break;
