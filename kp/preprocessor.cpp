@@ -150,7 +150,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     else if (c == '/') {
                         state = 3;
                     }
-                    else {
+                    else if (flag1 == '+') {
                         if (write(fl, &c, n) != n)
                             printf("Error in writing in.\n");
                     }
@@ -198,6 +198,13 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 flag1 = '-';
                             }
                             for (int j = 0; j <= 5;j++) {
+                                com[j] = '\0';
+                            }
+                            state = -1;
+                        }
+                        else if (!strcmp(com,"endif")) {
+                            flag1 = '+';
+                            for (int j = 0; j <= 6;j++) {
                                 com[j] = '\0';
                             }
                             state = -1;
