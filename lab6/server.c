@@ -221,11 +221,11 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
                     close(fp);
 					exit(0);
 				}
-			} while (c != '\n');
+			} while (c != '\n' && c != '\0');
 			info[i - 1] = '\0';
 			printf("\nread new command: %s\n", info);
 			i = 0;
-			while (info[i] != ' ') {
+			while (info[i] != ' ' && i < strlen(info)) {
 				action[i] = info[i];
 				i++;
 			}
@@ -268,7 +268,7 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 			}
 			else if (strcmp(action,"remove") == 0) {
 				j = 0;
-				while (info[i] != '\n') {
+				while (info[i] != '\0') {
 					j = j * 10 + info[i] - '0';
 					i++;
 				}
@@ -279,19 +279,22 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 					close(fp);
 					exit(0);
 				}
-				char* path = db_find(work, j, "");
-				if (path != NULL) {
-					u = 0;
-					while (path[u] != ' ') {
-						u++;
-					}
-					u++;
-					i = u;
-					while(i < strlen(path)) {
-						th[i - u - 1] = path[i];
-						i++;
-					}
-					send(k->r_fl, "remove", j, path, "", -1);
+				char* path = db_find(work, p,"");
+					if (path != NULL) {
+						db_add(work, j, p);
+						u = 0;
+						while (path[u] != ' ') {
+							u++;
+						}
+						i = u + 1;
+						while(i < strlen(path)) {
+							th[i - u - 1] = path[i];
+							i++;
+						}
+					send(k->r_fl, "remove", j, th, "", -1);
+					for (i = 0; i < strlen(th); i++) {
+							th[i] = '\0';
+						}
 					db_del_k(work, j);
 					print_tree (work, 0);
 				} 
@@ -325,7 +328,6 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 				 	//нормально составить путь
 					char* path = db_find(work, p,"");
 					if (path != NULL) {
-						printf("path: %s\n", path);
 						db_add(work, j, p);
 						u = 0;
 						while (path[u] != ' ') {
@@ -337,6 +339,9 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 							i++;
 						}
 						send(k->r_fl, "create", j, th, "", -1);
+						for (i = 0; i < strlen(th); i++) {
+							th[i] = '\0';
+						}
 						print_tree (work, 0);
 					} 
 					else {
@@ -344,12 +349,12 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 					}
 			}
 				}
-				i = 0;
-				while (i < 20) {
-					info[i] = ' ';
-					i++;
-				}
 			}
 			free(action);
+		i = 0;
+				while (i < strlen(info)) {
+					info[i] = '\0';
+					i++;
+				}
 	}
 }
