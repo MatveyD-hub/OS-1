@@ -58,31 +58,30 @@ void knot_add(knot* k, int d) {
 	char* str1 = malloc(10);
 	char* str = malloc(10);
 		sprintf(str, "%d", d);
-		k->id_l = d;
-    	k->context_fl = zmq_ctx_new();
-    	k->r_fl = zmq_socket(k->context_fl, ZMQ_PUB);
-    	if (k->port_fl == 0) {
+		if (k->port_fl == 0) {
+    		k->context_fl = zmq_ctx_new();
+    		k->r_fl = zmq_socket(k->context_fl, ZMQ_PUB);
     		k->port_fl = TakePort(k->r_fl);
     	}
     	printf("PORT %d\n",k->port_fl );
     	sprintf(str1, "%d", k->port_fl);
-    	sprintf(str, "%d", d);
+    	sprintf(str, "%d", d );
     	pid_t pid = fork();
     	if (pid == 0) {
-    	execl("client", str, str1, NULL);
+    		execl("client", str, str1, NULL);
     	}
     	else {
-    	free(str);
-    	free(str1);
-    	sleep(1);
-    	send(k->r_fl,"test",11,"u","nm",-1);
+    		free(str);
+    		free(str1);
+    		sleep(1);
+    		send(k->r_fl,"test",11,"u","nm",-1);
     	}
 }	
 
 void knot_destroy(knot* k) {
 	//отправить сообщение об удалении сыновей
 	if (k->r_fl != NULL) {
-	send(k->r_fl, "remove", k->id_l, " ", " ", -1);
+		send(k->r_fl, "remove", k->id_l, " ", " ", -1);
 	}
 	//удалиться
 	zmq_close (k->r_me);
