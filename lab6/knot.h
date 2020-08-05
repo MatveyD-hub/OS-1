@@ -16,9 +16,9 @@
 #include "vocabulary.h"
 #include "message.h"
 
-int BEGIN_PORT = 30000;
-char* BIND_URL = "tcp://*:";
-char* CON_URL = "tcp://localhost:";
+int BEGIN_PORT = 8000;
+//char* BIND_URL = "tcp://*:";
+//char* CON_URL = "tcp://localhost:";
 
 char* BindURLPort(int port);
 
@@ -28,8 +28,6 @@ int TakePort(void* socket);
 
 typedef struct _n {
 	int id;
-    int id_l;
-    int id_r;
     void* context_me;
     void* r_me;
     pid_t pid;
@@ -37,13 +35,10 @@ typedef struct _n {
     int port_fl;
     void* context_fl;
     void* r_fl;
-    int port_fr;
-    void* context_fr;
-    void* r_fr;
 } knot;
 
 knot* knot_create(char* id, char* pport);
-void knot_add(int type, knot* k, int id);
+void knot_add(knot* k, int d);
 void knot_destroy(knot* k);
 
 #endif
