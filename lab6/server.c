@@ -201,6 +201,7 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 	char info[20],c;
 	int n,i,j, p, va;
 	while (1) {
+	
 		//signal(SIGINT, block_func);
 		//if (!flag) {
 			i = 0;
@@ -217,6 +218,7 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 				}
 				else {
 					printf("No more commands: %d\n",n);
+                    close(fp);
 					exit(0);
 				}
 			} while (c != '\n');
@@ -349,6 +351,5 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 				}
 			}
 			free(action);
-		//}
 	}
 }
