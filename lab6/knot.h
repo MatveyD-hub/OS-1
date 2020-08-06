@@ -40,5 +40,6 @@ typedef struct _n {
 knot* knot_create(char* id, char* pport);
 void knot_add(knot* k, int d);
 void knot_destroy(knot* k);
+void knot_destroy_brahch(knot* k);
 
 #endif
