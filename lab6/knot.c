@@ -43,15 +43,13 @@ knot* knot_create(char * id, char * pport) {
 		k->pid = getpid();
 		k->context_me = zmq_ctx_new();
     	k->r_me = zmq_socket(k->context_me, ZMQ_SUB);
-    	int conn = zmq_connect(k->r_me, ConURLPort(inPort));
+    	zmq_connect(k->r_me, ConURLPort(inPort));
     	zmq_setsockopt(k->r_me, ZMQ_SUBSCRIBE, "", 0);
-		printf("CONNECTION %d\n",conn);
-		printf("PORT CHILD %d\n",inPort);
-    	k->v = voc_create();
+		k->v = voc_create();
     	k->port_fl = 0;
     	k->context_fl = NULL;
     	k->r_fl = NULL;
-    	printf("Ok:%d:created:%d\n",k->id,k->pid);
+    	printf("Ok:%d:created\n",k->id);
     	return k;
 	}
 void knot_add(knot* k, int d) {
@@ -63,7 +61,6 @@ void knot_add(knot* k, int d) {
     		k->r_fl = zmq_socket(k->context_fl, ZMQ_PUB);
     		k->port_fl = TakePort(k->r_fl);
     	}
-    	printf("PORT %d\n",k->port_fl );
     	sprintf(str1, "%d", k->port_fl);
     	sprintf(str, "%d", d );
     	pid_t pid = fork();
@@ -73,18 +70,22 @@ void knot_add(knot* k, int d) {
     	else {
     		free(str);
     		free(str1);
-    		sleep(1);
-    		send(k->r_fl,"test",11,"u","nm",-1);
     	}
 }	
 
 void knot_destroy(knot* k) {
-	//отправить сообщение об удалении сыновей
+	zmq_close (k->r_me);
+    zmq_ctx_destroy(k->context_me);
+    free(k);
+}
+
+void knot_destroy_brahch(knot* k) {
+//отправить сообщение об удалении сыновей
 	if (k->r_fl != NULL) {
-		send(k->r_fl, "remove", k->id_l, " ", " ", -1);
+		send(k->r_fl, "remove", -1, " ", " ", -1);
 	}
 	//удалиться
 	zmq_close (k->r_me);
-    zmq_ctx_destroy (k->context_me);
+    zmq_ctx_destroy(k->context_me);
     free(k);
 }
