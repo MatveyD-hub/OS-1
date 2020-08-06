@@ -143,25 +143,26 @@ void db_add(db* t, int id, int p) {
     }
 }
 
-void del_br(db* t) {
-	if (t != NULL) {
-		if (t->l != NULL ) {
-		del_br(t->l);
+void del_br(db* t, db* lost) {
+	db* r = lost;
+	if (lost != NULL) {
+		while (r->r != NULL ) {
+			r = r->r;
 		}
-		if (t->r != NULL ) {
-		del_br(t->r);
-		}
-		free(t);
+		r->r = t;
+	}
+	else {
+		lost = t;
 	}
 }
-void db_del_k(db* t, int p) {
+void db_del_k(db* t, int p, db* lost) {
 	if (t != NULL) {
 		db* b = t;
 		db* y = NULL;
 		while (b->r != NULL) {
 			if (b->r->id == p) {
 				y = b->r->r;
-				del_br(b->r->l);
+				del_br(b->r->l, lost);
 				b->r = y;
 				break;
 			}
@@ -170,11 +171,11 @@ void db_del_k(db* t, int p) {
 		if (t->l != NULL) {
 			if (t->l->id == p) {
 				y = b->l->r;
-				del_br(b->l->l);
+				del_br(b->l->l, lost);
 				b->l = y;
 			}
 			else {
-				db_del_k(t->l, p);
+				db_del_k(t->l, p, lost);
 			}
 		}
 	}
@@ -193,29 +194,37 @@ void print_tree (db* t, int i) {
 
 int main(int argc, char * argv[]) //ввод имя файла с командами
 {
-	int fp;
-	int u;
+	int fp, vr, u;
+	int n,i,j, p, va;
 	char* th = malloc(255);
 	if ((fp = open(argv[1], O_RDONLY)) < 0) {
 		printf("Cannot open file.\n");
 		exit(1);
 	}
 	knot* k = malloc(sizeof(knot));
+	db* lost = malloc(sizeof(knot));
+	lost->id = -1;
 	k->id = -1;
+	char name[20];
+	for (i = 0; i < 20; i++) {
+		name[i] = '\0';
+	}
 	char* path = NULL;
 	db* work = db_create();
 	char info[20],c;
-	int n,i,j, p, va;
+	char* action = malloc(10);
+	while (i < 10) {
+		action[i] = '\0';
+		i++;
+	}
+	i = 0;
+	while(i < strlen(th)) {
+		th[i] = '\0';
+		i++;
+	}
 	while (1) {
-	
 		//signal(SIGINT, block_func);
 		//if (!flag) {
-			i = 0;
-			while(i < strlen(th)) {
-				th[i] = ' ';
-				i++;
-			}
-			char* action = malloc(10);
 			i = 0;
 			do {
 				if((n = read(fp,&c, 1)) > 0) {
@@ -224,17 +233,19 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 				}
 				else {
 					printf("No more commands: %d\n",n);
+					knot_destroy_brahch(k);
                     close(fp);
 					exit(0);
 				}
 			} while (c != '\n' && c != '\0');
 			info[i - 1] = '\0';
-			printf("\nread new command: %s\n", info);
 			i = 0;
 			while (info[i] != ' ' && i < strlen(info)) {
 				action[i] = info[i];
 				i++;
 			}
+			action[i] = '\0';
+			printf("\n read new command: %s\n", info);
 			i++;
 			// типы команд:
 			// create id [parent]
@@ -243,33 +254,49 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 			// heartbit time
 			if (strcmp(action,"exec") == 0) {
 				j = 0;
-				while (info[i] != ' ') {
+				while (info[i] != ' ' && i < strlen(info)) {
 					j = j * 10 + info[i] - '0';
 					i++;
 				}
 				i++;
 				path = db_find(work, j, "");
 				if (path != NULL) {
-					char* name = malloc(10);
-					while (info[i] != ' ') {
-						name[i] = info[i];
-						i++;
+					u = 0;
+					while (path[u] != ' ') {
+						u++;
 					}
+					u++;
+					vr = 0;
+					while(u < strlen(path)) {
+						th[vr] = path[u];
+						u++;
+						vr++;
+					}
+					u = 0;
+					while (info[i] != ' ' && i < strlen(info)) {
+						name[u] = info[i];
+						i++;
+						u++;
+					}
+					name[u] = '\0';
 					p = 0;
-					while (info[i] != ' ') {
-						p = p * 10 + info[i] - '0';
-						i++;
-					}
 					i++;
-					send(k->r_fl, "exec", j, path, name, p);
-					free(name);
+					if (i < strlen(info)) {
+						while (info[i] != '\0') {
+							p = p * 10 + info[i] - '0';
+							i++;
+						}
+						send(k->r_fl, "exec", j, th, name, p);
+					}
+					else {
+						send(k->r_fl, "exec", j, th, name, -1);
+					}
 				} 
 				else {
 					printf("Error: Not found\n");
 				}
-				i = 0;
-				while (i < 20) {
-					info[i] = ' ';
+				for (i = 0; i <= strlen(name); i++) {
+							name[i] = '\0';
 				}
 			}
 			else if (strcmp(action,"remove") == 0) {
@@ -281,7 +308,7 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 				i++;
 				if (j == -29) {
 					printf("Ok:%d:removed\n", k->id);
-					knot_destroy(k);
+					knot_destroy_brahch(k);
 					close(fp);
 					exit(0);
 				}
@@ -300,9 +327,25 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 					for (i = 0; i < strlen(th); i++) {
 							th[i] = '\0';
 						}
-					db_del_k(work, j);
+					db_del_k(work, j, lost);
 					print_tree (work, 0);
 				} 
+				else {
+					printf("Error: Not found\n");
+				}
+			}
+			else if (!strcmp(action,"ping")) {
+				j = 0;
+				while (info[i] != ' ' && info[i] != '\0') {
+					j = j * 10 + info[i] - '0';
+					i++;
+				}
+				if (db_find(work, j, "") != NULL) {
+					printf("Ok: 1\n");
+				}
+				else if (db_find(lost, j, "") != NULL) {
+					printf("Ok: 0\n");
+				}
 				else {
 					printf("Error: Not found\n");
 				}
@@ -329,7 +372,7 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 					print_tree(work, 0);
 					knot_add(k, j);
 				}
-				 else {
+				else {
 				 	//нормально составить путь
 					path = db_find(work, p,"");
 					if (path != NULL) {
@@ -352,15 +395,19 @@ int main(int argc, char * argv[]) //ввод имя файла с команда
 					else {
 						printf("Error: Parent not found\n");
 					}
-			}
 				}
 			}
-			free(action);
+			}
 		i = 0;
 		path = NULL;
-				while (i < strlen(info)) {
-					info[i] = '\0';
-					i++;
-				}
+		while (i < strlen(info)) {
+			info[i] = '\0';
+			i++;
+		}
+		i = 0;
+		while (i < strlen(action)) {
+			action[i] = '\0';
+			i++;
+		}
 	}
 }
