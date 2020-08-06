@@ -145,14 +145,14 @@ void db_add(db* t, int id, int p) {
 
 void del_br(db* t, db* lost) {
 	db* r = lost;
-	if (lost != NULL) {
+	if (lost->r != NULL) {
 		while (r->r != NULL ) {
 			r = r->r;
 		}
 		r->r = t;
 	}
 	else {
-		lost = t;
+		lost->r = t;
 	}
 }
 void db_del_k(db* t, int p, db* lost) {
