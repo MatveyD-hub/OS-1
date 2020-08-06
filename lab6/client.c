@@ -22,11 +22,10 @@ int main(int argc, char * argv[])
 	knot* k = knot_create(argv[0], argv[1]);
 	while(true) {
 		mes = rec(k->r_me);
-		printf("In %d pid:%d client while %s %d |%s| %d |%s|\n",k->id, k->pid, mes->action, mes->id, mes->path, mes->value, mes->name);
 		if (strcmp(mes->action,"exec") == 0) {
 			if (mes->id == k->id) {
 				printf("Ok:%d",k->id);
-				if (mes->value != -1) { //добавить в словарь
+				if (mes->value != -29) { //добавить в словарь
 					voc_add_w(k->v, mes->name, mes->value);
 					printf("\n");
 				}
@@ -50,11 +49,16 @@ int main(int argc, char * argv[])
 				if (vr == k->id) {
 					u++;
 					i = u;
+					vr = 0;
 					while(i < strlen(mes->path)) {
-						th[i - u - 1] = mes->path[i];
+						th[vr] = mes->path[i];
 						i++;
+						vr++;
 					}
-					send(k->r_fl, "exec", mes->id, th, "", -1);
+					if (mes->value == -29) {
+						mes->value = -1;
+					}
+					send(k->r_fl, "exec", mes->id, th, mes->name, mes->value);
 					i = 0;
 					while(i < strlen(th)) {
 						th[i] = '\0';
