@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
 	knot* k = knot_create(argv[0], argv[1]);
 	while(true) {
 		mes = rec(k->r_me);
-		printf("In %d client while %s %d |%s| %d |%s|\n",k->id,mes->action, mes->id, mes->path, mes->value, mes->name);
+		printf("In %d pid:%d client while %s %d |%s| %d |%s|\n",k->id, k->pid, mes->action, mes->id, mes->path, mes->value, mes->name);
 		if (strcmp(mes->action,"exec") == 0) {
 			if (mes->id == k->id) {
 				printf("Ok:%d",k->id);
@@ -43,7 +43,7 @@ int main(int argc, char * argv[])
 			else {
 				vr = 0;
 				u = 0;
-				while (mes->path[u] != ' ' && mes->path[u] != '\n') {
+				while (mes->path[u] != ' ' && mes->path[u] != '\0') {
 					vr = vr * 10 + mes->path[u] - '0';
 					u++;
 				}
@@ -57,47 +57,47 @@ int main(int argc, char * argv[])
 					send(k->r_fl, "exec", mes->id, th, "", -1);
 					i = 0;
 					while(i < strlen(th)) {
-						th[i] = ' ';
+						th[i] = '\0';
 						i++;
 					}
 				}
 			}
 		}
 		else if (strcmp(mes->action,"remove") == 0) {
-			if (mes->id == k->id) {
+			if (mes->id == k->id || mes->id == -29) {
 				printf("Ok:%d:removed\n", k->id);
 				knot_destroy(k);
 				exit(0);
 			}
-			else {
+			else if (k->port_fl != 0) {
 				u = 0;
 				vr = 0;
-				while (mes->path[u] != ' ') {
+				while (mes->path[u] != ' ' && mes->path[u] != '\0') {
 					vr = vr * 10 + mes->path[u] - '0';
 					u++;
 				}
 				if (vr == k->id) {
 					u++;
 					i = u;
+					vr = 0;
 					while(i < strlen(mes->path)) {
-						th[i - u - 1] = mes->path[i];
+						th[vr] = mes->path[i];
 						i++;
+						vr++;
 					}
 					send(k->r_fl, "remove", mes->id, th, "", -1);
 					i = 0;
 					while(i < strlen(th)) {
-						th[i] = ' ';
+						th[i] = '\0';
 						i++;
 					}
 				}
 			}
 		}
 		else if (strcmp(mes->action,"create") == 0) {
-			printf("In client SON CR\n");
-			printf("path in client %s\n",mes->path);
 			vr = 0;
 			u = 0;
-			while (mes->path[u] != ' ' && mes->path[u] != '\n') {
+			while (mes->path[u] != ' ' && mes->path[u] != '\0') {
 				vr = vr * 10 + mes->path[u] - '0';
 				u++;
 			}
@@ -105,21 +105,25 @@ int main(int argc, char * argv[])
 				if (strlen(mes->path) == u) {
 					knot_add(k, mes->id);
 				}
-				else {
+				else if (k->port_fl != 0) {
 					u++;
 					i = u;
+					vr = 0;
 					while(i < strlen(mes->path)) {
-						th[i - u - 1] = mes->path[i];
+						th[vr] = mes->path[i];
 						i++;
+						vr++;
 					}
+					printf("path in client th: %s|\n",th);
 					send(k->r_fl, "create", mes->id, th, "", -1);
 					i = 0;
-					while (i < 20) {
-						th[i] = ' ';
+					while (i < strlen(th)) {
+						th[i] = '\0';
 						i++;
 					}
 				}
 			}
+			free(mes);
 		}
 	}
 	return 0;
