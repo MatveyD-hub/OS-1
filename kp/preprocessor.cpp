@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <dirent.h>
+#include <sys/stat.h>
 
 enum Lexeme { //препроцессорные лексемы
     CONST, NAME, IDENTIFIER, KEYWORD, OPERATOR, NUMBER, SEPARATOR
@@ -87,7 +88,7 @@ public:
             delete [] it->first;
             delete [] it->second;
         }
-     }
+    }
     
 };
 
@@ -113,12 +114,14 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     for (int j = 0; j <= strlen(argv[1]); j++) {
         _FILE_[j] = argv[1][j];
     }
-    int fp,fl, state = -1, i = 0, i1 = 0;
+    int fp,fl,pos = 0, lib, state = -1, i = 0, i1 = 0;
     ssize_t n;
     char c = '\0', b = '\0';
     char buf[255] = {'\0'};
     int bu = 0;
+    char path_include[] = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1";
     char dop[30] = {'\0'};
+    char* path = new char[strlen(path_include) + 30 + 1];;
     char dop1[30] = {'\0'};
     char* uk = NULL;
     dop[0] = '\0';
@@ -148,6 +151,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
      */
     while (1) {
         if((n = read(fp,&c, 1)) > 0) {
+            pos++;
             if (c == '\n') {
                 _LINE_++;
             }
@@ -240,7 +244,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                 case 1:
                     if (c == '\n') {
                         if (write(fl, &c, n) != n)
-                           printf("Error in writing in.\n");
+                            printf("Error in writing in.\n");
                         state = -1;
                     }
                     break;
@@ -366,7 +370,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     dop1[y] ='\0';
                                 }
                                 i1 = 0;
-                        }
+                            }
                         }
                         else if (!strcmp(com,"endif")) {
                             flag1 = '+';
@@ -477,7 +481,39 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 else if (dop[0] == '<') {
                                     if (dop[i - 1] == '>') {
                                         //поиск <>
-                                        std::cout << "ПОИСК " << dop << "|\n\n";
+                                        dop[i - 1] = '\0';
+                                        for (i = 0; i < strlen(dop); i++) {
+                                            dop1[i] = dop[i+1];
+                                        }
+                                        std::cout << "ПОИСК " << dop1 << "|\n\n";
+                                        dir = opendir(path_include);
+                                        if( dir == NULL ) {
+                                            printf( "Error opening dir \n");
+                                        }
+                                        entry = readdir(dir);
+                                        while (entry != NULL) {
+                                            if (!strcmp(entry->d_name, dop1)) {
+                                                flag = '+';
+                                                strcat(path, path_include);
+                                                strcat(path, "/");
+                                                strcat(path, dop1);
+                                                if ((lib = open(path, O_RDONLY)) < 0) {
+                                                    printf("Cannot open file.\n");
+                                                    exit(1);
+                                                }
+                                                while ((n = read(lib,&c, 1)) > 0) {
+                                                    if (write(fl, &c, n) != n)
+                                                        printf("Error in writing in.\n");
+                                                }
+                                                close(lib);
+                                                break;
+                                            }
+                                            entry = readdir(dir);
+                                        }
+                                        closedir(dir);
+                                        if (flag != '+') {
+                                            std::cout << "Error: file " << dop1 << " not found\n";
+                                        }
                                         for (int p = 0; p <= i; p++) {
                                             dop[p] = '\0';
                                         }
@@ -502,6 +538,62 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 else if (dop[0] == '"') {
                                     if (dop[i - 1] == '"') {
                                         //поиск ""
+                                        dir = opendir(".");
+                                        if( dir == NULL ) {
+                                            printf( "Error opening dir \n");
+                                        }
+                                        dop[i - 1] = '\0';
+                                        for (i = 0; i < strlen(dop); i++) {
+                                            dop1[i] = dop[i+1];
+                                        }
+                                        entry = readdir(dir);
+                                        while (entry != NULL) {
+                                            if (!strcmp(entry->d_name, dop1)) {
+                                                flag = '+';
+                                                if ((lib = open(dop1, O_RDONLY)) < 0) {
+                                                    printf("Cannot open file.\n");
+                                                    exit(1);
+                                                }
+                                                while ((n = read(lib,&c, 1)) > 0) {
+                                                    if (write(fl, &c, n) != n)
+                                                        printf("Error in writing in.\n");
+                                                }
+                                                close(lib);
+                                                break;
+                                            }
+                                            entry = readdir(dir);
+                                        }
+                                        closedir(dir);
+                                        if (flag != '+') { //не нашли в текущем каталоге
+                                            dir = opendir(path_include);
+                                            if( dir == NULL ) {
+                                                printf( "Error opening dir \n");
+                                            }
+                                            entry = readdir(dir);
+                                            while (entry != NULL) {
+                                                if (!strcmp(entry->d_name, dop1)) {
+                                                    flag = '+';
+                                                    strcat(path, path_include);
+                                                    strcat(path, "/");
+                                                    strcat(path, dop1);
+                                                    if ((lib = open(path, O_RDONLY)) < 0) {
+                                                        printf("Cannot open file.\n");
+                                                        exit(1);
+                                                    }
+                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                        if (write(fl, &c, n) != n)
+                                                            printf("Error in writing in.\n");
+                                                    }
+                                                    close(lib);
+                                                    break;
+                                                }
+                                                entry = readdir(dir);
+                                            }
+                                            closedir(dir);
+                                            if (flag != '+') {
+                                                std::cout << "Error: file " << dop1 << " not found\n";
+                                            }
+                                        }
                                         std::cout << "ПОИСК " << dop << "|\n\n";
                                         for (int p = 0; p <= i; p++) {
                                             dop[p] = '\0';
@@ -555,6 +647,58 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     if (dop[i-1] == flag || dop[0] == flag || (flag == '<' && dop[0] == '>')) {
                                         if (flag == '"') {
                                             //поиск "
+                                            dir = opendir(".");
+                                            if( dir == NULL ) {
+                                                printf( "Error opening dir \n");
+                                            }
+                                            entry = readdir(dir);
+                                            while (entry != NULL) {
+                                                if (!strcmp(entry->d_name, dop1)) {
+                                                    flag = '+';
+                                                    if ((lib = open(dop1, O_RDONLY)) < 0) {
+                                                        printf("Cannot open file.\n");
+                                                        exit(1);
+                                                    }
+                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                        if (write(fl, &c, n) != n)
+                                                            printf("Error in writing in.\n");
+                                                    }
+                                                    close(lib);
+                                                    break;
+                                                }
+                                                entry = readdir(dir);
+                                            }
+                                            closedir(dir);
+                                            if (flag != '+') { //не нашли в текущем каталоге
+                                                dir = opendir(path_include);
+                                                if( dir == NULL ) {
+                                                    printf( "Error opening dir \n");
+                                                }
+                                                entry = readdir(dir);
+                                                while (entry != NULL) {
+                                                    if (!strcmp(entry->d_name, dop1)) {
+                                                        flag = '+';
+                                                        strcat(path, path_include);
+                                                        strcat(path, "/");
+                                                        strcat(path, dop1);
+                                                        if ((lib = open(path, O_RDONLY)) < 0) {
+                                                            printf("Cannot open file.\n");
+                                                            exit(1);
+                                                        }
+                                                        while ((n = read(lib,&c, 1)) > 0) {
+                                                            if (write(fl, &c, n) != n)
+                                                                printf("Error in writing in.\n");
+                                                        }
+                                                        close(lib);
+                                                        break;
+                                                    }
+                                                    entry = readdir(dir);
+                                                }
+                                                closedir(dir);
+                                                if (flag != '+') {
+                                                    std::cout << "Error: file " << dop1 << " not found\n";
+                                                }
+                                            }
                                             std::cout << "ПОИСК \"" << dop1 << dop << "|\n\n";
                                             for (int p = 0; p <= i; p++) {
                                                 dop[p] = '\0';
@@ -567,7 +711,34 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             state = -1;
                                         }
                                         else {
-                                            //поиск <
+                                            dir = opendir(path_include);
+                                            if( dir == NULL ) {
+                                                printf( "Error opening dir \n");
+                                            }
+                                            entry = readdir( dir );
+                                            while (entry != NULL) {
+                                                if (!strcmp(entry->d_name, dop1)) {
+                                                    flag = '+';
+                                                    strcat(path, path_include);
+                                                    strcat(path, "/");
+                                                    strcat(path, dop1);
+                                                    if ((lib = open(path, O_RDONLY)) < 0) {
+                                                        printf("Cannot open file.\n");
+                                                        exit(1);
+                                                    }
+                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                        if (write(fl, &c, n) != n)
+                                                            printf("Error in writing in.\n");
+                                                    }
+                                                    close(lib);
+                                                    break;
+                                                }
+                                                entry = readdir( dir );
+                                            }
+                                            closedir( dir );
+                                            if (flag != '+') {
+                                                std::cout << "Error: file " << dop1 << " not found\n";
+                                            }
                                             std::cout << "ПОИСК <" << dop1 << dop << "|\n\n";
                                             for (int p = 0; p <= i; p++) {
                                                 dop[p] = '\0';
