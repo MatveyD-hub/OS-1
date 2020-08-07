@@ -51,23 +51,28 @@ public:
         }
     }
     void define_change(char* k1, char* k2) {
-        std::map<char*, char*> :: iterator it = d.find(k1);
-        if (it != d.end()) {
-            it->second = k2;
+        std::map<char*, char*> :: iterator it = d.begin();
+        for (; it != d.end(); it++) {  // выводим их
+            if (!strcmp(it->first, k1)) {
+                it->second = k2;
+                break;
+            }
         }
-        else {
+        if (it == d.end()) {
             std::cout << "No pair to change\n";
         }
     }
-    std::string define_second (char* k1) {
-        std::map<char*, char*> :: iterator it = d.find(k1);
-        if (it != d.end()) {
-            return it->second;
+    char* define_second (char* k1) {
+        std::map<char*, char*> :: iterator it = d.begin();
+        for (; it != d.end(); it++) {  // выводим их
+            if (!strcmp(it->first, k1)) {
+                return it->second;
+            }
         }
-        else {
-            std::cout << "No pair to find second\n";
-            return "";
+        if (it == d.end()) {
+            std::cout << "No pair to change\n";
         }
+        return NULL;
     }
     void define_cout () {
         std::map<char*, char*> :: iterator it = d.begin();
@@ -111,8 +116,11 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     int fp,fl, state = -1, i = 0, i1 = 0;
     ssize_t n;
     char c = '\0', b = '\0';
+    char buf[255] = {'\0'};
+    int bu = 0;
     char dop[30] = {'\0'};
     char dop1[30] = {'\0'};
+    char* uk = NULL;
     dop[0] = '\0';
     dop1[0] = '\0';
     char flag = ' ', flag1 = '+'; //for include
@@ -140,6 +148,9 @@ int main(int argc, const char * argv[]) { //ввод имя файла
      */
     while (1) {
         if((n = read(fp,&c, 1)) > 0) {
+            if (c == '\n') {
+                _LINE_++;
+            }
             switch (state)
             {
                 case -1:
@@ -156,7 +167,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     }
                     break;
                 case -2:
-                    if (c == '\0') {
+                    if (c == '\n') {
                         state = -1;
                     }
                     else if (c == ' ') {
@@ -204,7 +215,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         }
                         else if (!strcmp(com,"endif")) {
                             flag1 = '+';
-                            for (int j = 0; j <= 6;j++) {
+                            for (int j = 0; j <= 5;j++) {
                                 com[j] = '\0';
                             }
                             state = -1;
@@ -597,8 +608,208 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 }
                             }
                         }
-                        else if (!strcmp(com,"if") && flag1 == '+') {
-                            
+                        else if (!strcmp(com,"if") && flag1 == '+') { //считаем до конца строки и проанализируем
+                            bu = 0;
+                            b = ' ';
+                            if (c != '\n') {
+                                while (b != '\n') {
+                                    if ((n = read(fp,&b, 1)) > 0) {
+                                        buf[bu] = b;
+                                        bu++;
+                                    }
+                                    else {
+                                        close(fp);
+                                        close(fl);
+                                        break;
+                                    }
+                                }
+                                buf[bu - 1] = '\0';
+                            }
+                            dop[i] = '\0';
+                            _LINE_++;
+                            //далее анализируем строку
+                            uk = strstr(dop, "defined");
+                            if (uk != NULL) {
+                                bu = (int)(uk - dop + 7);
+                                if (dop[uk - dop - 1] == '!') {
+                                    flag = '!';
+                                }
+                                if (dop[bu] == '(' && !strcmp(buf,"\0")) { //без пробелов defined(NAME) или !defined(NAME)
+                                    i = 0;
+                                    bu++;
+                                    while (bu < strlen(dop)) {
+                                        if (dop[bu] == ')') {
+                                            dop1[i] = '\0';
+                                            break;
+                                        }
+                                        else {
+                                            dop1[i] = dop[bu];
+                                            i++;
+                                            bu++;
+                                        }
+                                    }
+                                    if (dop[bu] == ')') {
+                                        if (flag == '!') {
+                                            if (!d.define_check(dop1)) {
+                                                flag1 = '+';
+                                            }
+                                            else {
+                                                flag1 = '-';
+                                            }
+                                        }
+                                        else {
+                                            if (!d.define_check(dop1)) {
+                                                flag1 = '-';
+                                            }
+                                            else {
+                                                flag1 = '+';
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        flag1 = '-';
+                                    }
+                                }
+                                else { // defined NAME или !defined NAME
+                                    i = 0;
+                                    while (i < strlen(buf) && buf[i] != ' ') {
+                                        dop1[i] = buf[i];
+                                        i++;
+                                    }
+                                    dop1[i] = '\0';
+                                    for (; i < strlen(buf); i++) {
+                                        if (buf[i] != ' ') {
+                                            std::cout << "Error: IF; line:" << _LINE_ <<"\n";
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                    }
+                                    if (flag == '!') {
+                                        if (!d.define_check(dop1)) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else {
+                                        if (!d.define_check(dop1)) {
+                                            flag1 = '-';
+                                        }
+                                        else {
+                                            flag1 = '+';
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                if (d.define_check(dop)) {
+                                    while (d.define_check(dop)) {
+                                        strcpy(dop, d.define_second(dop)); //нашли окончательную замену макроса на число в строковом виде
+                                    }
+                                    i = 0;
+                                    while (buf[i] == ' ') {
+                                        i++;
+                                    }
+                                    if (buf[i] == '>') { // только if NAME > INT
+                                        // if NAME < INT
+                                        // if NAME == INT
+                                        flag = '>';
+                                    }
+                                    else if (buf[i] == '<') {
+                                        flag = '<';
+                                    }
+                                    else if (buf[i] == '=' && buf[i + 1] == '=') {
+                                        flag = '=';
+                                        i++;
+                                    }
+                                    else {
+                                        std::cout << "Error: IF; line:" << _LINE_ <<"\n";
+                                        close(fp);
+                                        close(fl);
+                                        exit(0);
+                                    }
+                                    i++;
+                                    bu = 0;
+                                    while (buf[i] == ' ') {
+                                        i++;
+                                    }
+                                    while (buf[i] != ' ' && i < strlen(buf)) {
+                                        if (buf[i] < '0' || buf[i] > '9') {
+                                            std::cout << "Error: IS'T INT:" << buf[i] << "\n";
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                        bu = bu * 10 + buf[i] - '0';
+                                        i++;
+                                    }
+                                    i1 = 0;
+                                    for (i = 0; i < strlen(dop); i++) {
+                                        if (dop[i] < '0' || dop[i] > '9') {
+                                            std::cout << "Error: MACROS IS'T INT:" << dop[i] <<"\n";
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                        i1 = i1 * 10 + dop[i] - '0';
+                                    }
+                                    if (flag == '>') {
+                                        if (i1 > bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else if (flag == '<') {
+                                        if (i1 < bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else if (flag == '=') {
+                                        if (i1 == bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else {
+                                        std::cout << "Error: FLAG IS NONE; line:" << _LINE_ <<"\n";
+                                        close(fp);
+                                        close(fl);
+                                        exit(0);
+                                    }
+                                }
+                                else {
+                                    std::cout << "Error: MACROS not defined\n";
+                                    close(fp);
+                                    close(fl);
+                                    exit(0);
+                                }
+                            }
+                            flag = ' ';
+                            for (int j = 0; j <= 8;j++) {
+                                com[j] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(dop); p++) {
+                                dop[p] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(buf); p++) {
+                                buf[p] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(dop1); p++) {
+                                dop1[p] = '\0';
+                            }
+                            i = 0;
+                            i1 = 0;
+                            bu = 0;
+                            state = -1;
                         }
                         else if (!strcmp(com,"ifdef") && flag1 == '+') {
                             if (d.define_check(dop)) {
