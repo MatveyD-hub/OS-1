@@ -118,7 +118,6 @@ int main(int argc, char * argv[])
 						i++;
 						vr++;
 					}
-					printf("path in client th: %s|\n",th);
 					send(k->r_fl, "create", mes->id, th, "", -1);
 					i = 0;
 					while (i < strlen(th)) {
