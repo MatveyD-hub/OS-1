@@ -114,14 +114,13 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     for (int j = 0; j <= strlen(argv[1]); j++) {
         _FILE_[j] = argv[1][j];
     }
-    int fp,fl,pos = 0, lib, state = -1, i = 0, i1 = 0;
+    int fp, fl, lib, state = -1, i = 0, i1 = 0;
     ssize_t n;
     char c = '\0', b = '\0';
     char buf[255] = {'\0'};
     int bu = 0;
     char path_include[] = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1";
     char dop[30] = {'\0'};
-    char* path = new char[strlen(path_include) + 30 + 1];;
     char dop1[30] = {'\0'};
     char* uk = NULL;
     dop[0] = '\0';
@@ -151,7 +150,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
      */
     while (1) {
         if((n = read(fp,&c, 1)) > 0) {
-            pos++;
             if (c == '\n') {
                 _LINE_++;
             }
@@ -165,9 +163,27 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                     else if (c == '/') {
                         state = 3;
                     }
-                    else if (flag1 == '+') {
+                    else if ((c == ' ' || c == '\n' || c == '\0') && flag1 == '+') {
+                        dop[i] = '\0';
+                        while (d.define_check(dop)) {
+                            strcpy(dop, d.define_second(dop)); //нашли окончательную замену макроса на число в строковом виде
+                        }
+                        for (i = 0; i < strlen(dop); i++) {
+                            if (write(fl, &dop[i], n) != n)
+                                printf("Error in writing in.\n");
+                        }
                         if (write(fl, &c, n) != n)
                             printf("Error in writing in.\n");
+                        for (i = 0; i <= strlen(dop); i++) {
+                            dop[i] = '\0';
+                        }
+                        i = 0;
+                    }
+                    else if (flag1 == '+') {
+                        if (i < 30) {
+                            dop[i] = c;
+                            i++;
+                        }
                     }
                     break;
                 case -2:
@@ -493,6 +509,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         entry = readdir(dir);
                                         while (entry != NULL) {
                                             if (!strcmp(entry->d_name, dop1)) {
+                                                char* path = new char[strlen(path_include) + 30 + 1];
                                                 flag = '+';
                                                 strcat(path, path_include);
                                                 strcat(path, "/");
@@ -501,6 +518,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                     printf("Cannot open file.\n");
                                                     exit(1);
                                                 }
+                                                delete[] path;
                                                 while ((n = read(lib,&c, 1)) > 0) {
                                                     if (write(fl, &c, n) != n)
                                                         printf("Error in writing in.\n");
@@ -573,6 +591,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             while (entry != NULL) {
                                                 if (!strcmp(entry->d_name, dop1)) {
                                                     flag = '+';
+                                                    char* path = new char[strlen(path_include) + 30 + 1];
                                                     strcat(path, path_include);
                                                     strcat(path, "/");
                                                     strcat(path, dop1);
@@ -580,6 +599,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         printf("Cannot open file.\n");
                                                         exit(1);
                                                     }
+                                                    delete [] path;
                                                     while ((n = read(lib,&c, 1)) > 0) {
                                                         if (write(fl, &c, n) != n)
                                                             printf("Error in writing in.\n");
@@ -632,10 +652,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     for (int j = 0; j <= 8;j++) {
                                         com[j] = '\0';
                                     }
-                                    for (int p = 0; p <= i; p++) {
+                                    for (int p = 0; p <= strlen(dop); p++) {
                                         dop[p] = '\0';
                                     }
-                                    for (int p = 0; p <= i1; p++) {
+                                    for (int p = 0; p <= strlen(dop1); p++) {
                                         dop1[p] = '\0';
                                     }
                                     i = 0;
@@ -678,6 +698,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                 while (entry != NULL) {
                                                     if (!strcmp(entry->d_name, dop1)) {
                                                         flag = '+';
+                                                        char* path = new char[strlen(path_include) + 30 + 1];
                                                         strcat(path, path_include);
                                                         strcat(path, "/");
                                                         strcat(path, dop1);
@@ -685,6 +706,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                             printf("Cannot open file.\n");
                                                             exit(1);
                                                         }
+                                                        delete[] path;
                                                         while ((n = read(lib,&c, 1)) > 0) {
                                                             if (write(fl, &c, n) != n)
                                                                 printf("Error in writing in.\n");
@@ -700,10 +722,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                 }
                                             }
                                             std::cout << "ПОИСК \"" << dop1 << dop << "|\n\n";
-                                            for (int p = 0; p <= i; p++) {
+                                            for (int p = 0; p <= strlen(dop); p++) {
                                                 dop[p] = '\0';
                                             }
-                                            for (int p = 0; p <= i1; p++) {
+                                            for (int p = 0; p <= strlen(dop1); p++) {
                                                 dop1[p] = '\0';
                                             }
                                             i = 0;
@@ -719,6 +741,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             while (entry != NULL) {
                                                 if (!strcmp(entry->d_name, dop1)) {
                                                     flag = '+';
+                                                    char* path = new char[strlen(path_include) + 30 + 1];
                                                     strcat(path, path_include);
                                                     strcat(path, "/");
                                                     strcat(path, dop1);
@@ -726,6 +749,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         printf("Cannot open file.\n");
                                                         exit(1);
                                                     }
+                                                    delete[] path;
                                                     while ((n = read(lib,&c, 1)) > 0) {
                                                         if (write(fl, &c, n) != n)
                                                             printf("Error in writing in.\n");
@@ -740,10 +764,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                 std::cout << "Error: file " << dop1 << " not found\n";
                                             }
                                             std::cout << "ПОИСК <" << dop1 << dop << "|\n\n";
-                                            for (int p = 0; p <= i; p++) {
+                                            for (int p = 0; p <= strlen(dop); p++) {
                                                 dop[p] = '\0';
                                             }
-                                            for (int p = 0; p <= i1; p++) {
+                                            for (int p = 0; p <= strlen(dop1); p++) {
                                                 dop1[p] = '\0';
                                             }
                                             i = 0;
@@ -756,7 +780,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             dop1[p] = dop[p];
                                         }
                                         i1 = i;
-                                        for (int p = 0; p <= i; p++) {
+                                        for (int p = 0; p <= strlen(dop); p++) {
                                             dop[p] = '\0';
                                         }
                                         i = 0;
@@ -767,10 +791,10 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             com[j] = '\0';
                                         }
                                         state = -1;
-                                        for (int p = 0; p <= i; p++) {
+                                        for (int p = 0; p <= strlen(dop); p++) {
                                             dop[p] = '\0';
                                         }
-                                        for (int p = 0; p <= i1; p++) {
+                                        for (int p = 0; p <= strlen(dop1); p++) {
                                             dop1[p] = '\0';
                                         }
                                         i = 0; i1 = 0;
@@ -1064,8 +1088,8 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         std::cout << "CHANGED LINE: " << _LINE_ << "\n";
                                         state = -1;
                                     }
-                                    for (int y = 0; y <= i; y++) {
-                                        dop[i] = '\0';
+                                    for (int y = 0; y <= strlen(dop); y++) {
+                                        dop[y] = '\0';
                                     }
                                     i = 0;
                                 }
@@ -1137,6 +1161,12 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     flag = ' ';
                                     for (int j = 0; j <= 5;j++) {
                                         com[j] = '\0';
+                                    }
+                                    for (int y = 0; y <= strlen(dop); y++) {
+                                        dop[y] = '\0';
+                                    }
+                                    for (int y = 0; y <= strlen(dop1); y++) {
+                                        dop1[y] = '\0';
                                     }
                                     state = -1;
                                 }
