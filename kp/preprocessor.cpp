@@ -118,6 +118,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     ssize_t n = 1;
     char c = '\0', b = '\0';
     struct FileMapping g;
+    struct FileMapping l; // for includes
     char buf[255] = {'\0'};
     int bu = 0;
     char path_include[] = "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1";
@@ -133,7 +134,6 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     }
     g.fl = fp;
     g.fsize = getFileSize(argv[1]);
-    ftruncate(g.fl, g.fsize);
     g.dataPtr = (char*)mmap(NULL, g.fsize, PROT_READ, MAP_SHARED, g.fl, 0); //Создаем отображение файла в память
     // PROT_READ страницы могут быть прочитаны
     // PROT_WRITE стр могут быть описаны
@@ -165,7 +165,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
      8 после include "
      */
     c = ' ';
-    ssize_t pos = 0;
+    ssize_t pos = 0, pos1;
     while (pos < g.fsize) {
         c = g.dataPtr[pos];
         pos++;
@@ -206,6 +206,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         else {
                             std::cout << "Lexem is too big. line: " << _LINE_ << "\n";
                             munmap(g.dataPtr, g.fsize);
+                            delete [] _FILE_;
                             close(fp);
                             close(fl);
                             //return 0;
@@ -385,6 +386,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         if (!strcmp(com,"error")) {
                             std::cout << "\n";
                             munmap(g.dataPtr, g.fsize);
+                            delete [] _FILE_;
                             close(fp);
                             close(fl);
                             break;
@@ -540,11 +542,34 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                     printf("Cannot open file. line: %d\n", _LINE_);
                                                     exit(1);
                                                 }
+                                                l.fl = lib;
+                                                l.fsize = getFileSize(path);
+                                                l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                // PROT_READ страницы могут быть прочитаны
+                                                // PROT_WRITE стр могут быть описаны
+                                                //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                if (l.dataPtr == MAP_FAILED)
+                                                    // при ошибке возвращается значение MAP_FAILED
+                                                {
+                                                    perror("Map");
+                                                    printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                    close(l.fl);
+                                                    delete [] _FILE_;
+                                                    close(fp);
+                                                    close(fl);
+                                                    munmap(g.dataPtr, g.fsize);
+                                                    exit(-1);
+                                                }
+                                                pos1 = 0;
                                                 delete[] path;
-                                                while ((n = read(lib,&c, 1)) > 0) {
+                                                while (pos1 < l.fsize) {
+                                                    c = l.dataPtr[pos1];
+                                                    pos1++;
                                                     if (write(fl, &c, n) != n)
                                                         printf("Error in writing in. line: %d\n", _LINE_);
                                                 }
+                                                munmap(l.dataPtr, l.fsize);
+                                                l.fl = -1;
                                                 close(lib);
                                                 break;
                                             }
@@ -591,10 +616,33 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                     printf("Cannot open file. line: %d\n", _LINE_);
                                                     exit(1);
                                                 }
-                                                while ((n = read(lib,&c, 1)) > 0) {
+                                                l.fl = lib;
+                                                l.fsize = getFileSize(dop1);
+                                                l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                // PROT_READ страницы могут быть прочитаны
+                                                // PROT_WRITE стр могут быть описаны
+                                                //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                if (l.dataPtr == MAP_FAILED)
+                                                    // при ошибке возвращается значение MAP_FAILED
+                                                {
+                                                    perror("Map");
+                                                    printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                    close(l.fl);
+                                                    delete [] _FILE_;
+                                                    close(fp);
+                                                    close(fl);
+                                                    munmap(g.dataPtr, g.fsize);
+                                                    exit(-1);
+                                                }
+                                                pos1 = 0;
+                                                while (pos1 < l.fsize) {
+                                                    c = l.dataPtr[pos1];
+                                                    pos1++;
                                                     if (write(fl, &c, n) != n)
                                                         printf("Error in writing in. line: %d\n", _LINE_);
                                                 }
+                                                munmap(l.dataPtr, l.fsize);
+                                                l.fl = -1;
                                                 close(lib);
                                                 break;
                                             }
@@ -618,11 +666,34 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         printf("Cannot open file. line: %d\n", _LINE_);
                                                         exit(1);
                                                     }
-                                                    delete [] path;
-                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                    l.fl = lib;
+                                                    l.fsize = getFileSize(path);
+                                                    l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                    // PROT_READ страницы могут быть прочитаны
+                                                    // PROT_WRITE стр могут быть описаны
+                                                    //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                    if (l.dataPtr == MAP_FAILED)
+                                                        // при ошибке возвращается значение MAP_FAILED
+                                                    {
+                                                        perror("Map");
+                                                        printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                        close(l.fl);
+                                                        delete [] _FILE_;
+                                                        close(fp);
+                                                        close(fl);
+                                                        munmap(g.dataPtr, g.fsize);
+                                                        exit(-1);
+                                                    }
+                                                    pos1 = 0;
+                                                    while (pos1 < l.fsize) {
+                                                        c = l.dataPtr[pos1];
+                                                        pos1++;
                                                         if (write(fl, &c, n) != n)
                                                             printf("Error in writing in. line: %d\n", _LINE_);
                                                     }
+                                                    munmap(l.dataPtr, l.fsize);
+                                                    l.fl = -1;
+                                                    delete [] path;
                                                     close(lib);
                                                     break;
                                                 }
@@ -691,10 +762,33 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         printf("Cannot open file. line: %d\n", _LINE_);
                                                         exit(1);
                                                     }
-                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                    l.fl = lib;
+                                                    l.fsize = getFileSize(dop1);
+                                                    l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                    // PROT_READ страницы могут быть прочитаны
+                                                    // PROT_WRITE стр могут быть описаны
+                                                    //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                    if (l.dataPtr == MAP_FAILED)
+                                                        // при ошибке возвращается значение MAP_FAILED
+                                                    {
+                                                        perror("Map");
+                                                        printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                        close(l.fl);
+                                                        delete [] _FILE_;
+                                                        close(fp);
+                                                        close(fl);
+                                                        munmap(g.dataPtr, g.fsize);
+                                                        exit(-1);
+                                                    }
+                                                    pos1 = 0;
+                                                    while (pos1 < l.fsize) {
+                                                        c = l.dataPtr[pos1];
+                                                        pos1++;
                                                         if (write(fl, &c, n) != n)
                                                             printf("Error in writing in. line: %d\n", _LINE_);
                                                     }
+                                                    munmap(l.dataPtr, l.fsize);
+                                                    l.fl = -1;
                                                     close(lib);
                                                     break;
                                                 }
@@ -718,11 +812,34 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                             printf("Cannot open file. line: %d\n", _LINE_);
                                                             exit(1);
                                                         }
-                                                        delete[] path;
-                                                        while ((n = read(lib,&c, 1)) > 0) {
+                                                        l.fl = lib;
+                                                        l.fsize = getFileSize(path);
+                                                        l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                        // PROT_READ страницы могут быть прочитаны
+                                                        // PROT_WRITE стр могут быть описаны
+                                                        //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                        if (l.dataPtr == MAP_FAILED)
+                                                            // при ошибке возвращается значение MAP_FAILED
+                                                        {
+                                                            perror("Map");
+                                                            printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                            close(l.fl);
+                                                            delete [] _FILE_;
+                                                            close(fp);
+                                                            close(fl);
+                                                            munmap(g.dataPtr, g.fsize);
+                                                            exit(-1);
+                                                        }
+                                                        pos1 = 0;
+                                                        while (pos1 < l.fsize) {
+                                                            c = l.dataPtr[pos1];
+                                                            pos1++;
                                                             if (write(fl, &c, n) != n)
                                                                 printf("Error in writing in. line: %d\n", _LINE_);
                                                         }
+                                                        munmap(l.dataPtr, l.fsize);
+                                                        l.fl = -1;
+                                                        delete[] path;
                                                         close(lib);
                                                         break;
                                                     }
@@ -759,11 +876,34 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         printf("Cannot open file. line: %d\n", _LINE_);
                                                         exit(1);
                                                     }
-                                                    delete[] path;
-                                                    while ((n = read(lib,&c, 1)) > 0) {
+                                                    l.fl = lib;
+                                                    l.fsize = getFileSize(path);
+                                                    l.dataPtr = (char*)mmap(NULL, l.fsize, PROT_READ, MAP_SHARED, l.fl, 0); //Создаем отображение файла в память
+                                                    // PROT_READ страницы могут быть прочитаны
+                                                    // PROT_WRITE стр могут быть описаны
+                                                    //  MAP_SHARED стр могут сипользоваться совместно с др процессами, которые также проектируют этот объект в память
+                                                    if (l.dataPtr == MAP_FAILED)
+                                                        // при ошибке возвращается значение MAP_FAILED
+                                                    {
+                                                        perror("Map");
+                                                        printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
+                                                        close(l.fl);
+                                                        delete [] _FILE_;
+                                                        close(fp);
+                                                        close(fl);
+                                                        munmap(g.dataPtr, g.fsize);
+                                                        exit(-1);
+                                                    }
+                                                    pos1 = 0;
+                                                    while (pos1 < l.fsize) {
+                                                        c = l.dataPtr[pos1];
+                                                        pos1++;
                                                         if (write(fl, &c, n) != n)
                                                             printf("Error in writing in. line: %d\n", _LINE_);
                                                     }
+                                                    munmap(l.dataPtr, l.fsize);
+                                                    l.fl = -1;
+                                                    delete[] path;
                                                     close(lib);
                                                     break;
                                                 }
@@ -820,6 +960,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 }
                                 if (pos == g.fsize) {
                                     munmap(g.dataPtr, g.fsize);
+                                    delete [] _FILE_;
                                     close(fp);
                                     close(fl);
                                     break;
@@ -882,6 +1023,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         if (buf[i] != ' ') {
                                             std::cout << "Error: IF; line:" << _LINE_ <<"\n";
                                             munmap(g.dataPtr, g.fsize);
+                                            delete [] _FILE_;
                                             close(fp);
                                             close(fl);
                                             exit(0);
@@ -929,6 +1071,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     else {
                                         std::cout << "Error: IF; line:" << _LINE_ <<"\n";
                                         munmap(g.dataPtr, g.fsize);
+                                        delete [] _FILE_;
                                         close(fp);
                                         close(fl);
                                         exit(0);
@@ -942,6 +1085,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         if (buf[i] < '0' || buf[i] > '9') {
                                             std::cout << "Error: IS'T INT:" << buf[i] << ". line: " <<_LINE_<< "\n";
                                             munmap(g.dataPtr, g.fsize);
+                                            delete [] _FILE_;
                                             close(fp);
                                             close(fl);
                                             exit(0);
@@ -953,6 +1097,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     for (i = 0; i < strlen(dop); i++) {
                                         if (dop[i] < '0' || dop[i] > '9') {
                                             std::cout << "Error: MACROS IS'T INT:" << dop[i] << ". line: " <<_LINE_<<"\n";
+                                            delete [] _FILE_;
                                             munmap(g.dataPtr, g.fsize);
                                             close(fp);
                                             close(fl);
@@ -986,6 +1131,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     }
                                     else {
                                         std::cout << "Error: FLAG IS NONE; line:" << _LINE_ <<"\n";
+                                        delete [] _FILE_;
                                         munmap(g.dataPtr, g.fsize);
                                         close(fp);
                                         close(fl);
@@ -994,6 +1140,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 }
                                 else {
                                     std::cout << "Error: MACROS not defined. line: "<< _LINE_<< "\n";
+                                    delete [] _FILE_;
                                     munmap(g.dataPtr, g.fsize);
                                     close(fp);
                                     close(fl);
@@ -1062,7 +1209,221 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             state = -1;
                         }
                         else if (!strcmp(com,"elif") && flag1 == '-') {
-                            
+                            bu = 0;
+                            b = ' ';
+                            if (c != '\n') {
+                                while (b != '\n' && pos < g.fsize) {
+                                    b = g.dataPtr[pos];
+                                    pos++;
+                                    buf[bu] = b;
+                                    bu++;
+                                }
+                                if (pos == g.fsize) {
+                                    munmap(g.dataPtr, g.fsize);
+                                    delete [] _FILE_;
+                                    close(fp);
+                                    close(fl);
+                                    break;
+                                }
+                                buf[bu - 1] = '\0';
+                            }
+                            dop[i] = '\0';
+                            _LINE_++;
+                            //далее анализируем строку
+                            uk = strstr(dop, "defined");
+                            if (uk != NULL) {
+                                bu = (int)(uk - dop + 7);
+                                if (dop[uk - dop - 1] == '!') {
+                                    flag = '!';
+                                }
+                                if (dop[bu] == '(' && !strcmp(buf,"\0")) { //без пробелов defined(NAME) или !defined(NAME)
+                                    i = 0;
+                                    bu++;
+                                    while (bu < strlen(dop)) {
+                                        if (dop[bu] == ')') {
+                                            dop1[i] = '\0';
+                                            break;
+                                        }
+                                        else {
+                                            dop1[i] = dop[bu];
+                                            i++;
+                                            bu++;
+                                        }
+                                    }
+                                    if (dop[bu] == ')') {
+                                        if (flag == '!') {
+                                            if (!d.define_check(dop1)) {
+                                                flag1 = '+';
+                                            }
+                                            else {
+                                                flag1 = '-';
+                                            }
+                                        }
+                                        else {
+                                            if (!d.define_check(dop1)) {
+                                                flag1 = '-';
+                                            }
+                                            else {
+                                                flag1 = '+';
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        flag1 = '-';
+                                    }
+                                }
+                                else { // defined NAME или !defined NAME
+                                    i = 0;
+                                    while (i < strlen(buf) && buf[i] != ' ') {
+                                        dop1[i] = buf[i];
+                                        i++;
+                                    }
+                                    dop1[i] = '\0';
+                                    for (; i < strlen(buf); i++) {
+                                        if (buf[i] != ' ') {
+                                            std::cout << "Error: ELIF; line:" << _LINE_ <<"\n";
+                                            munmap(g.dataPtr, g.fsize);
+                                            delete [] _FILE_;
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                    }
+                                    if (flag == '!') {
+                                        if (!d.define_check(dop1)) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else {
+                                        if (!d.define_check(dop1)) {
+                                            flag1 = '-';
+                                        }
+                                        else {
+                                            flag1 = '+';
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                if (d.define_check(dop)) {
+                                    while (d.define_check(dop)) {
+                                        strcpy(dop, d.define_second(dop)); //нашли окончательную замену макроса на число в строковом виде
+                                    }
+                                    i = 0;
+                                    while (buf[i] == ' ') {
+                                        i++;
+                                    }
+                                    if (buf[i] == '>') { // только if NAME > INT
+                                        // if NAME < INT
+                                        // if NAME == INT
+                                        flag = '>';
+                                    }
+                                    else if (buf[i] == '<') {
+                                        flag = '<';
+                                    }
+                                    else if (buf[i] == '=' && buf[i + 1] == '=') {
+                                        flag = '=';
+                                        i++;
+                                    }
+                                    else {
+                                        std::cout << "Error: ElIF; line:" << _LINE_ <<"\n";
+                                        munmap(g.dataPtr, g.fsize);
+                                        delete [] _FILE_;
+                                        close(fp);
+                                        close(fl);
+                                        exit(0);
+                                    }
+                                    i++;
+                                    bu = 0;
+                                    while (buf[i] == ' ') {
+                                        i++;
+                                    }
+                                    while (buf[i] != ' ' && i < strlen(buf)) {
+                                        if (buf[i] < '0' || buf[i] > '9') {
+                                            std::cout << "Error: IS'T INT:" << buf[i] << ". line: " <<_LINE_<< "\n";
+                                            munmap(g.dataPtr, g.fsize);
+                                            delete [] _FILE_;
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                        bu = bu * 10 + buf[i] - '0';
+                                        i++;
+                                    }
+                                    i1 = 0;
+                                    for (i = 0; i < strlen(dop); i++) {
+                                        if (dop[i] < '0' || dop[i] > '9') {
+                                            std::cout << "Error: MACROS IS'T INT:" << dop[i] << ". line: " <<_LINE_<<"\n";
+                                            delete [] _FILE_;
+                                            munmap(g.dataPtr, g.fsize);
+                                            close(fp);
+                                            close(fl);
+                                            exit(0);
+                                        }
+                                        i1 = i1 * 10 + dop[i] - '0';
+                                    }
+                                    if (flag == '>') {
+                                        if (i1 > bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else if (flag == '<') {
+                                        if (i1 < bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else if (flag == '=') {
+                                        if (i1 == bu) {
+                                            flag1 = '+';
+                                        }
+                                        else {
+                                            flag1 = '-';
+                                        }
+                                    }
+                                    else {
+                                        std::cout << "Error: FLAG IS NONE; line:" << _LINE_ <<"\n";
+                                        delete [] _FILE_;
+                                        munmap(g.dataPtr, g.fsize);
+                                        close(fp);
+                                        close(fl);
+                                        exit(0);
+                                    }
+                                }
+                                else {
+                                    std::cout << "Error: MACROS not defined. line: "<< _LINE_<< "\n";
+                                    delete [] _FILE_;
+                                    munmap(g.dataPtr, g.fsize);
+                                    close(fp);
+                                    close(fl);
+                                    exit(0);
+                                }
+                            }
+                            flag = ' ';
+                            for (int j = 0; j <= 8;j++) {
+                                com[j] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(dop); p++) {
+                                dop[p] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(buf); p++) {
+                                buf[p] = '\0';
+                            }
+                            for (int p = 0; p <= strlen(dop1); p++) {
+                                dop1[p] = '\0';
+                            }
+                            i = 0;
+                            i1 = 0;
+                            bu = 0;
+                            state = -1;
                         }
                         else if (!strcmp(com,"endif")) {
                             flag1 = '+';
@@ -1192,6 +1553,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                             std::cout << dop << ". line: " << _LINE_;
                             if (c == '\n') {
                                 std::cout << "\n";
+                                delete [] _FILE_;
                                 munmap(g.dataPtr, g.fsize);
                                 close(fp);
                                 close(fl);
