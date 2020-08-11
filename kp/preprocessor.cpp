@@ -206,6 +206,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                         else {
                             std::cout << "Lexem is too big. line: " << _LINE_ << "\n";
                             munmap(g.dataPtr, g.fsize);
+                            d.~Define();
                             delete [] _FILE_;
                             close(fp);
                             close(fl);
@@ -554,6 +555,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                     perror("Map");
                                                     printf("FileMappingCreate - open failed, fname = %s \n", argv[1]);
                                                     close(l.fl);
+                                                    d.~Define();
                                                     delete [] _FILE_;
                                                     close(fp);
                                                     close(fl);
@@ -630,6 +632,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                     close(l.fl);
                                                     delete [] _FILE_;
                                                     close(fp);
+                                                    d.~Define();
                                                     close(fl);
                                                     munmap(g.dataPtr, g.fsize);
                                                     exit(-1);
@@ -680,6 +683,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         close(l.fl);
                                                         delete [] _FILE_;
                                                         close(fp);
+                                                        d.~Define();
                                                         close(fl);
                                                         munmap(g.dataPtr, g.fsize);
                                                         exit(-1);
@@ -776,6 +780,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         close(l.fl);
                                                         delete [] _FILE_;
                                                         close(fp);
+                                                        d.~Define();
                                                         close(fl);
                                                         munmap(g.dataPtr, g.fsize);
                                                         exit(-1);
@@ -827,6 +832,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                             delete [] _FILE_;
                                                             close(fp);
                                                             close(fl);
+                                                            d.~Define();
                                                             munmap(g.dataPtr, g.fsize);
                                                             exit(-1);
                                                         }
@@ -891,6 +897,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                                         delete [] _FILE_;
                                                         close(fp);
                                                         close(fl);
+                                                        d.~Define();
                                                         munmap(g.dataPtr, g.fsize);
                                                         exit(-1);
                                                     }
@@ -962,6 +969,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     munmap(g.dataPtr, g.fsize);
                                     delete [] _FILE_;
                                     close(fp);
+                                    d.~Define();
                                     close(fl);
                                     break;
                                 }
@@ -1025,6 +1033,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             munmap(g.dataPtr, g.fsize);
                                             delete [] _FILE_;
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1073,6 +1082,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         munmap(g.dataPtr, g.fsize);
                                         delete [] _FILE_;
                                         close(fp);
+                                        d.~Define();
                                         close(fl);
                                         exit(0);
                                     }
@@ -1087,6 +1097,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             munmap(g.dataPtr, g.fsize);
                                             delete [] _FILE_;
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1100,6 +1111,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             delete [] _FILE_;
                                             munmap(g.dataPtr, g.fsize);
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1134,6 +1146,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         delete [] _FILE_;
                                         munmap(g.dataPtr, g.fsize);
                                         close(fp);
+                                        d.~Define();
                                         close(fl);
                                         exit(0);
                                     }
@@ -1143,6 +1156,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     delete [] _FILE_;
                                     munmap(g.dataPtr, g.fsize);
                                     close(fp);
+                                    d.~Define();
                                     close(fl);
                                     exit(0);
                                 }
@@ -1222,6 +1236,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     munmap(g.dataPtr, g.fsize);
                                     delete [] _FILE_;
                                     close(fp);
+                                    d.~Define();
                                     close(fl);
                                     break;
                                 }
@@ -1285,6 +1300,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             munmap(g.dataPtr, g.fsize);
                                             delete [] _FILE_;
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1333,6 +1349,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         munmap(g.dataPtr, g.fsize);
                                         delete [] _FILE_;
                                         close(fp);
+                                        d.~Define();
                                         close(fl);
                                         exit(0);
                                     }
@@ -1347,6 +1364,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             munmap(g.dataPtr, g.fsize);
                                             delete [] _FILE_;
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1360,6 +1378,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                             delete [] _FILE_;
                                             munmap(g.dataPtr, g.fsize);
                                             close(fp);
+                                            d.~Define();
                                             close(fl);
                                             exit(0);
                                         }
@@ -1394,6 +1413,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                         delete [] _FILE_;
                                         munmap(g.dataPtr, g.fsize);
                                         close(fp);
+                                        d.~Define();
                                         close(fl);
                                         exit(0);
                                     }
@@ -1403,6 +1423,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                     delete [] _FILE_;
                                     munmap(g.dataPtr, g.fsize);
                                     close(fp);
+                                    d.~Define();
                                     close(fl);
                                     exit(0);
                                 }
@@ -1556,6 +1577,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
                                 delete [] _FILE_;
                                 munmap(g.dataPtr, g.fsize);
                                 close(fp);
+                                d.~Define();
                                 close(fl);
                                 break;
                             }
@@ -1607,6 +1629,7 @@ int main(int argc, const char * argv[]) { //ввод имя файла
     delete [] _FILE_;
     munmap(g.dataPtr, g.fsize);
     close(fp);
+    d.~Define();
     close(fl);
     //return 0;
     exit(0);
