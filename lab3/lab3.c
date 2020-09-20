@@ -250,5 +250,7 @@ int main(int argc, const char * argv[]) {
     else {
         printf("\n There is NOT it in the tree \n");
     }
+    free(t);
+    free(j1);
     return 0;
 }
